@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --color-green-primary: #00843D;
+  --color-green-dark: #005C2B;
+  --color-green-light: #E6F5ED;
+  --color-yellow-accent: #F5C800;
+  --color-yellow-dark: #B8960A;
+  --color-alert-red: #DC2626;
+  --color-zone-libertadores: #2563EB;
+  --color-zone-sulamericana: #16A34A;
+  --color-zone-rebaixamento: #DC2626;
+  --font-heading: "Bebas Neue", sans-serif;
+  --font-body: "Syne", sans-serif;
+  --font-data: "DM Mono", monospace;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+}
+
+/* Heading font class */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+/* Data font class */
+.font-data {
+  font-family: var(--font-data);
+}
+
+/* Form indicators */
+.form-W {
+  background-color: #16A34A;
+  color: white;
+}
+.form-D {
+  background-color: #9CA3AF;
+  color: white;
+}
+.form-L {
+  background-color: #DC2626;
+  color: white;
+}
+
+/* Status badge pulse animation */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.animate-pulse-live {
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+/* Custom scrollbar for tables */
+.table-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.table-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+/* Zone indicator strip */
+.zone-strip {
+  width: 4px;
+  min-height: 100%;
+  border-radius: 2px;
+}
