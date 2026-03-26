@@ -6,6 +6,7 @@ import { useState } from "react"
 
 const links = [
   { href: "/", label: "Brasileirão" },
+  { href: "/times", label: "Times" },
   { href: "/copa-brasil", label: "Copa do Brasil" },
   { href: "/cartola", label: "Cartola FC" },
   { href: "/copa-mundo-2026", label: "Copa 2026" },

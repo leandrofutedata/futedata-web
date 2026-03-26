@@ -136,6 +136,19 @@ export async function fetchWcTeamStats(): Promise<WcTeamStats[]> {
   return data as WcTeamStats[]
 }
 
+export async function fetchPlayerStatsByTeam(teamName: string): Promise<PlayerStats[]> {
+  const { data, error } = await supabase
+    .from('player_stats')
+    .select('*')
+    .eq('team', teamName)
+
+  if (error) {
+    console.error('Error fetching player stats for team:', error)
+    return []
+  }
+  return data as PlayerStats[]
+}
+
 export function getAvailableRounds(games: Game[]): number[] {
   const rounds = new Set<number>()
   for (const game of games) {
