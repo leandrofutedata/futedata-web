@@ -3,11 +3,13 @@
 import { useState, useMemo } from "react"
 import type { CopaBrasilGame, Game, TeamStanding } from "@/lib/types"
 import { calcStandings } from "@/lib/calculations"
+import { InsightBox } from "./InsightBox"
 
 /* ─── Props ─── */
 interface CopaBrasilClientProps {
   copaGames: CopaBrasilGame[]
   brasileiraoGames: Game[]
+  copaInsight?: string
 }
 
 /* ─── Confronto (tie / matchup) ─── */
@@ -723,7 +725,7 @@ function CompetitionStats({ copaGames, standings }: { copaGames: CopaBrasilGame[
    MAIN COMPONENT
    ═══════════════════════════════════════════ */
 
-export function CopaBrasilClient({ copaGames, brasileiraoGames }: CopaBrasilClientProps) {
+export function CopaBrasilClient({ copaGames, brasileiraoGames, copaInsight }: CopaBrasilClientProps) {
   const [showEarlier, setShowEarlier] = useState(false)
   const [activeFaseFilter, setActiveFaseFilter] = useState<string | null>(null)
 
@@ -824,6 +826,12 @@ export function CopaBrasilClient({ copaGames, brasileiraoGames }: CopaBrasilClie
           </div>
         </div>
       </div>
+
+      {copaInsight && (
+        <div className="mb-6">
+          <InsightBox insight={copaInsight} label="Análise da Fase" />
+        </div>
+      )}
 
         {/* Phase navigation */}
         <div className="flex gap-1.5 mb-6 flex-wrap">

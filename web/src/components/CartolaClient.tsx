@@ -4,12 +4,14 @@ import { useState, useMemo } from "react"
 import type { Game, PlayerStats, CartolaPlayer, TeamStanding } from "@/lib/types"
 import { calcStandings, parseRoundNumber } from "@/lib/calculations"
 import { supabase } from "@/lib/supabase"
+import { InsightBox } from "./InsightBox"
 
 /* ─── Props ─── */
 interface CartolaClientProps {
   games: Game[]
   playerStats: PlayerStats[]
   cartolaPlayers: CartolaPlayer[]
+  cartolaInsight?: string
 }
 
 /* ─── Aggregated player data (from player_stats) ─── */
@@ -596,7 +598,7 @@ function OpponentDifficultyTable({
    MAIN COMPONENT
    ═══════════════════════════════════════════ */
 
-export function CartolaClient({ games, playerStats, cartolaPlayers }: CartolaClientProps) {
+export function CartolaClient({ games, playerStats, cartolaPlayers, cartolaInsight }: CartolaClientProps) {
   const [activeTab, setActiveTab] = useState("Goleiros")
   const [activeFormation, setActiveFormation] = useState("4-3-3")
   const [showAvoid, setShowAvoid] = useState(false)
@@ -757,6 +759,12 @@ export function CartolaClient({ games, playerStats, cartolaPlayers }: CartolaCli
           </div>
         </div>
       </div>
+
+      {cartolaInsight && (
+        <div className="mb-6">
+          <InsightBox insight={cartolaInsight} label="Dica da Rodada" />
+        </div>
+      )}
 
         {/* Data status bar */}
         <div className="flex items-center gap-3 mb-6 flex-wrap">

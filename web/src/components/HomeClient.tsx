@@ -15,14 +15,16 @@ import { GameCard } from "./GameCard"
 import { Sidebar } from "./Sidebar"
 import { RoundAnalyses } from "./RoundAnalyses"
 import { AnalysisModal } from "./AnalysisModal"
+import { InsightBox } from "./InsightBox"
 
 interface HomeClientProps {
   games: Game[]
   articles: Article[]
   playerStats: PlayerStats[]
+  standingsInsight?: string
 }
 
-export function HomeClient({ games, articles, playerStats }: HomeClientProps) {
+export function HomeClient({ games, articles, playerStats, standingsInsight }: HomeClientProps) {
   const availableRounds = useMemo(() => getAvailableRounds(games), [games])
   const latestFinishedRound = useMemo(
     () => getLatestFinishedRound(games),
@@ -99,6 +101,10 @@ export function HomeClient({ games, articles, playerStats }: HomeClientProps) {
         {/* Left column — table + round games + analyses */}
         <div className="lg:col-span-2 space-y-6">
           <StandingsTable standings={standings} />
+
+          {standingsInsight && (
+            <InsightBox insight={standingsInsight} label="Visão do Campeonato" />
+          )}
 
           <RoundNav
             currentRound={currentRound}
