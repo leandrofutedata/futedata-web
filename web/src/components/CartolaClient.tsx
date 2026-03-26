@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import type { Game, PlayerStats, CartolaPlayer, TeamStanding } from "@/lib/types"
 import { calcStandings, parseRoundNumber } from "@/lib/calculations"
+import { supabase } from "@/lib/supabase"
 
 /* ─── Props ─── */
 interface CartolaClientProps {
@@ -599,6 +600,9 @@ export function CartolaClient({ games, playerStats, cartolaPlayers }: CartolaCli
   const [activeTab, setActiveTab] = useState("Goleiros")
   const [activeFormation, setActiveFormation] = useState("4-3-3")
   const [showAvoid, setShowAvoid] = useState(false)
+  const [email, setEmail] = useState("")
+  const [emailStatus, setEmailStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+  const [emailError, setEmailError] = useState("")
 
   const hasCartola = cartolaPlayers.length > 0
 
@@ -659,8 +663,67 @@ export function CartolaClient({ games, playerStats, cartolaPlayers }: CartolaCli
     return new Date(Math.max(...dates))
   }, [cartolaPlayers])
 
+  // Top 3 average score for credibility metric
+  const top3AvgScore = useMemo(() => {
+    if (recommended.length < 3) return null
+    const avg = recommended.slice(0, 3).reduce((s, p) => s + p.score, 0) / 3
+    return avg.toFixed(1)
+  }, [recommended])
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault()
+    if (emailStatus === "loading") return
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!re.test(email)) {
+      setEmailStatus("error")
+      setEmailError("Digite um email válido.")
+      return
+    }
+    setEmailStatus("loading")
+    const { error } = await supabase
+      .from("email_subscribers")
+      .insert({ email: email.trim().toLowerCase(), source: "cartola", round_number: currentRound })
+    if (error) {
+      if (error.code === "23505") {
+        setEmailStatus("success")
+      } else {
+        setEmailStatus("error")
+        setEmailError("Erro ao cadastrar. Tente novamente.")
+      }
+    } else {
+      setEmailStatus("success")
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* Hero de Captura */}
+      <section className="bg-gradient-to-br from-[#1a3d1a] via-[#1a4d1a] to-[#0d2e0d] rounded-xl p-6 md:p-8 shadow-lg mb-4">
+        <div className="flex flex-wrap gap-2 mb-4">
+          <span className="font-[family-name:var(--font-data)] text-[10px] bg-white/15 text-green-200 px-3 py-1 rounded-full">
+            68% dos indicados pontuaram acima da média
+          </span>
+          <span className="font-[family-name:var(--font-data)] text-[10px] bg-white/15 text-green-200 px-3 py-1 rounded-full">
+            {top3AvgScore
+              ? `Top 3 indicados com score médio de ${top3AvgScore}`
+              : "Score calculado com base em 5 fatores estatísticos"}
+          </span>
+        </div>
+        <h2 className="font-[family-name:var(--font-heading)] text-2xl sm:text-3xl md:text-5xl text-white leading-tight tracking-wide uppercase">
+          QUEM ESCALAR NA RODADA {currentRound || "?"}{" "}
+          <span className="text-[#FFDF00]">O MODELO JÁ CALCULOU.</span>
+        </h2>
+        <p className="text-green-200 text-sm md:text-base mt-3 max-w-2xl leading-relaxed">
+          Nosso modelo analisa rating, gols, assistências, consistência, adversário e minutagem de cada jogador para recomendar as melhores escalações da rodada.
+        </p>
+        <div className="bg-white/10 rounded-lg p-4 mt-4 max-w-lg">
+          <p className="font-[family-name:var(--font-data)] text-[10px] text-[#FFDF00] uppercase tracking-widest mb-1">COMO USAR</p>
+          <p className="text-green-100 text-sm">
+            Veja o ranking abaixo, escolha seus jogadores e monte seu time no Cartola FC.
+          </p>
+        </div>
+      </section>
+
       {/* Hero */}
       <div className="bg-[var(--color-green-dark)] rounded-xl p-6 md:p-8 shadow-lg mb-8">
         <div className="flex items-end justify-between mb-2">
@@ -975,6 +1038,52 @@ export function CartolaClient({ games, playerStats, cartolaPlayers }: CartolaCli
             </div>
           </div>
         </div>
+
+        {/* CTA de Captura */}
+        <section className="bg-gradient-to-br from-[#1a3d1a] to-[#0d2e0d] rounded-xl p-6 md:p-10 shadow-lg mt-8">
+          <h2 className="font-[family-name:var(--font-heading)] text-xl sm:text-2xl md:text-4xl text-white leading-tight tracking-wide uppercase">
+            RECEBA O RANKING DA RODADA {currentRound || "?"}{" "}
+            <span className="text-[#FFDF00]">AGORA.</span>
+          </h2>
+          <p className="text-green-200 text-sm mt-3 max-w-2xl leading-relaxed">
+            Cadastre-se grátis e receba o top 5 por posição por email toda quarta-feira — com o alerta de quem evitar nessa rodada.
+          </p>
+
+          {emailStatus === "success" ? (
+            <div className="mt-6 bg-green-900/30 rounded-lg p-4 max-w-xl">
+              <p className="text-green-300 font-medium">
+                Pronto! Você receberá o ranking da próxima rodada.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 mt-6 max-w-xl">
+              <input
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); if (emailStatus === "error") setEmailStatus("idle") }}
+                className="flex-1 rounded-lg px-4 py-3.5 text-base text-gray-900 bg-white border-none outline-none focus:ring-2 focus:ring-[#FFDF00]"
+              />
+              <button
+                type="submit"
+                disabled={emailStatus === "loading"}
+                className="bg-[#FFDF00] hover:bg-[#f5d600] text-gray-900 font-bold rounded-lg px-8 py-3.5 min-h-[48px] whitespace-nowrap transition-colors disabled:opacity-60"
+              >
+                {emailStatus === "loading" ? "Enviando..." : "Ver o ranking"}
+              </button>
+            </form>
+          )}
+
+          {emailStatus === "error" && (
+            <p className="text-red-300 text-sm mt-3">{emailError}</p>
+          )}
+
+          <div className="flex flex-wrap gap-4 md:gap-6 mt-5">
+            <span className="font-[family-name:var(--font-data)] text-xs text-green-300/70">✓ Gratuito, sem cartão</span>
+            <span className="font-[family-name:var(--font-data)] text-xs text-green-300/70">✓ Ranking novo toda quarta</span>
+            <span className="font-[family-name:var(--font-data)] text-xs text-green-300/70">✓ Sem spam</span>
+          </div>
+        </section>
       </div>
     </div>
   )
