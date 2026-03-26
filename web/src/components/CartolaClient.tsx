@@ -617,11 +617,17 @@ export function CartolaClient({ games, playerStats, cartolaPlayers }: CartolaCli
     [aggregated, cartolaPlayers, games, standings]
   )
 
-  // Current round info
+  // Current round: next unfinished round, or last finished + 1
   const currentRound = useMemo(() => {
+    // Try next scheduled game first
     const nsGames = games.filter((g) => g.status === "NS").sort((a, b) => a.date.localeCompare(b.date))
     if (nsGames.length > 0) {
       return parseRoundNumber(nsGames[0].round)
+    }
+    // Fallback: highest finished round + 1
+    const ftRounds = games.filter((g) => g.status === "FT").map((g) => parseRoundNumber(g.round))
+    if (ftRounds.length > 0) {
+      return Math.max(...ftRounds) + 1
     }
     return null
   }, [games])
