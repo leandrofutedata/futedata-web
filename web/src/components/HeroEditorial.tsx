@@ -131,7 +131,7 @@ export function HeroEditorial({
           xG · xGA · xPTS · ±PTS
         </span>
       </div>
-      <h1 className="font-[family-name:var(--font-heading)] text-[3rem] md:text-[3.5rem] lg:text-[4rem] text-white leading-[1.05] tracking-wide uppercase max-w-4xl">
+      <h1 className="font-[family-name:var(--font-heading)] text-[2.25rem] sm:text-[3rem] md:text-[3.5rem] lg:text-[4rem] text-white leading-[1.05] tracking-wide uppercase max-w-4xl">
         <span className="text-[var(--color-yellow-accent)]">{headline.split('.')[0]}.</span>
         {headline.includes('.') && headline.split('.').slice(1).join('.').trim() && (
           <> {headline.split('.').slice(1).join('.').trim()}</>

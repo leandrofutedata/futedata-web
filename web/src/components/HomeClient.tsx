@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import type { Game, Article } from "@/lib/types"
+import type { Game, Article, PlayerStats } from "@/lib/types"
 import { calcStandings, parseRoundNumber } from "@/lib/calculations"
 import {
   getAvailableRounds,
@@ -19,9 +19,10 @@ import { AnalysisModal } from "./AnalysisModal"
 interface HomeClientProps {
   games: Game[]
   articles: Article[]
+  playerStats: PlayerStats[]
 }
 
-export function HomeClient({ games, articles }: HomeClientProps) {
+export function HomeClient({ games, articles, playerStats }: HomeClientProps) {
   const availableRounds = useMemo(() => getAvailableRounds(games), [games])
   const latestFinishedRound = useMemo(
     () => getLatestFinishedRound(games),
@@ -131,7 +132,7 @@ export function HomeClient({ games, articles }: HomeClientProps) {
         </div>
 
         {/* Right column — stats card + upcoming + insights + glossary */}
-        <Sidebar standings={standings} upcomingGames={upcomingGames} />
+        <Sidebar standings={standings} upcomingGames={upcomingGames} playerStats={playerStats} />
       </div>
 
       {/* Modal */}

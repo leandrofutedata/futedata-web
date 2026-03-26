@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "populate": "tsx scripts/populate-games.ts"
+    "populate": "tsx scripts/populate-games.ts",
+    "populate:players": "tsx scripts/populate-player-stats.ts",
+    "populate:copa": "tsx scripts/populate-copa-brasil.ts",
+    "populate:cartola": "tsx scripts/populate-cartola.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.0",

@@ -1,11 +1,235 @@
-import type { Game, TeamStanding } from "@/lib/types"
+"use client"
+
+import { useState, useMemo } from "react"
+import type { Game, TeamStanding, PlayerStats } from "@/lib/types"
 
 interface SidebarProps {
   standings: TeamStanding[]
   upcomingGames: Game[]
+  playerStats: PlayerStats[]
 }
 
-export function Sidebar({ standings, upcomingGames }: SidebarProps) {
+/* ─── Player aggregation for sidebar ─── */
+interface PlayerAgg {
+  player_id: number
+  name: string
+  team: string
+  position: string
+  games: number
+  goals: number
+  assists: number
+  avgRating: number
+  passesTotal: number
+  passesAccurate: number
+  passAccuracy: number
+  tackles: number
+  interceptions: number
+  defensiveActions: number
+  saves: number
+}
+
+type HighlightTab = "artilharia" | "assistencias" | "avaliacao" | "passes" | "defesa" | "goleiros"
+
+const HIGHLIGHT_TABS: { id: HighlightTab; label: string }[] = [
+  { id: "artilharia", label: "Gols" },
+  { id: "assistencias", label: "Assist" },
+  { id: "avaliacao", label: "Rating" },
+  { id: "passes", label: "Passes" },
+  { id: "defesa", label: "Defesa" },
+  { id: "goleiros", label: "Goleiros" },
+]
+
+const TEAM_COLORS: Record<string, string> = {
+  Flamengo: "#B71C1C", Palmeiras: "#1B5E20", "Atletico-MG": "#212121",
+  Fluminense: "#880E4F", Corinthians: "#212121", "Sao Paulo": "#B71C1C",
+  Internacional: "#C62828", Gremio: "#0D47A1", Santos: "#212121",
+  Botafogo: "#212121", "Vasco DA Gama": "#212121", Cruzeiro: "#1565C0",
+  Bahia: "#0D47A1", "Fortaleza EC": "#B71C1C", "Atletico Paranaense": "#B71C1C",
+  "RB Bragantino": "#212121", Coritiba: "#1B5E20", Vitoria: "#B71C1C",
+  Mirassol: "#F9A825", "Chapecoense-sc": "#1B5E20", Remo: "#0D47A1",
+}
+
+function aggregateStats(stats: PlayerStats[]): PlayerAgg[] {
+  const map = new Map<number, PlayerAgg>()
+  for (const s of stats) {
+    if (!map.has(s.player_id)) {
+      map.set(s.player_id, {
+        player_id: s.player_id, name: s.player_name, team: s.team,
+        position: s.position, games: 0, goals: 0, assists: 0,
+        avgRating: 0, passesTotal: 0, passesAccurate: 0, passAccuracy: 0,
+        tackles: 0, interceptions: 0, defensiveActions: 0, saves: 0,
+      })
+    }
+    const p = map.get(s.player_id)!
+    p.games++
+    p.goals += s.goals
+    p.assists += s.assists
+    p.passesTotal += s.passes_total
+    p.passesAccurate += s.passes_accurate
+    p.tackles += s.tackles
+    p.interceptions += s.interceptions
+    p.saves += s.saves
+    if (s.rating) p.avgRating += s.rating
+  }
+  for (const p of map.values()) {
+    if (p.games > 0 && p.avgRating > 0) p.avgRating = p.avgRating / p.games
+    p.passAccuracy = p.passesTotal > 0 ? (p.passesAccurate / p.passesTotal) * 100 : 0
+    p.defensiveActions = p.tackles + p.interceptions
+  }
+  return Array.from(map.values())
+}
+
+function getTabData(agg: PlayerAgg[], tab: HighlightTab): { players: PlayerAgg[]; valueLabel: string; getValue: (p: PlayerAgg) => string } {
+  switch (tab) {
+    case "artilharia":
+      return {
+        players: agg.filter(p => p.goals > 0).sort((a, b) => b.goals - a.goals),
+        valueLabel: "Gols",
+        getValue: (p) => String(p.goals),
+      }
+    case "assistencias":
+      return {
+        players: agg.filter(p => p.assists > 0).sort((a, b) => b.assists - a.assists),
+        valueLabel: "Assist",
+        getValue: (p) => String(p.assists),
+      }
+    case "avaliacao":
+      return {
+        players: agg.filter(p => p.avgRating > 0 && p.games >= 2).sort((a, b) => b.avgRating - a.avgRating),
+        valueLabel: "Rating",
+        getValue: (p) => p.avgRating.toFixed(1),
+      }
+    case "passes":
+      return {
+        players: agg.filter(p => p.passesTotal > 0 && p.games >= 2).sort((a, b) => b.passAccuracy - a.passAccuracy),
+        valueLabel: "Precisao",
+        getValue: (p) => `${p.passAccuracy.toFixed(0)}%`,
+      }
+    case "defesa":
+      return {
+        players: agg.filter(p => p.defensiveActions > 0 && p.position !== "G").sort((a, b) => b.defensiveActions - a.defensiveActions),
+        valueLabel: "Des+Int",
+        getValue: (p) => String(p.defensiveActions),
+      }
+    case "goleiros":
+      return {
+        players: agg.filter(p => p.position === "G" && p.games >= 1).sort((a, b) => b.saves - a.saves),
+        valueLabel: "Defesas",
+        getValue: (p) => String(p.saves),
+      }
+  }
+}
+
+/* ─── Sub-components ─── */
+
+function TeamBadge({ team }: { team: string }) {
+  const color = TEAM_COLORS[team] || "#00843D"
+  const initials = team.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase()
+  return (
+    <div
+      className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[7px] font-bold shrink-0"
+      style={{ backgroundColor: color }}
+    >
+      {initials}
+    </div>
+  )
+}
+
+function PlayerHighlights({ playerStats }: { playerStats: PlayerStats[] }) {
+  const [activeTab, setActiveTab] = useState<HighlightTab>("artilharia")
+
+  const agg = useMemo(() => aggregateStats(playerStats), [playerStats])
+
+  const { players, valueLabel, getValue } = useMemo(
+    () => getTabData(agg, activeTab),
+    [agg, activeTab]
+  )
+
+  const top10 = players.slice(0, 10)
+  const leaderValue = top10.length > 0 ? parseFloat(getValue(top10[0])) : 1
+
+  if (playerStats.length === 0) return null
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="px-5 pt-4 pb-2">
+        <h3 className="font-[family-name:var(--font-heading)] text-lg text-gray-900">
+          DESTAQUES INDIVIDUAIS
+        </h3>
+      </div>
+
+      {/* Tabs */}
+      <div className="px-4 pb-2 flex gap-1 flex-wrap">
+        {HIGHLIGHT_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`font-[family-name:var(--font-data)] text-[10px] px-2 py-1 rounded-full transition-colors ${
+              activeTab === tab.id
+                ? "bg-[var(--color-green-primary)] text-white"
+                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Player list */}
+      <div className="px-4 pb-4">
+        {top10.length === 0 ? (
+          <p className="text-xs text-gray-400 py-4 text-center">Sem dados disponiveis</p>
+        ) : (
+          <div className="space-y-0.5">
+            {top10.map((p, i) => {
+              const val = parseFloat(getValue(p))
+              const barPct = leaderValue > 0 ? (val / leaderValue) * 100 : 0
+              return (
+                <div key={p.player_id} className="flex items-center gap-2 py-1.5 group">
+                  <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400 w-4 text-right">
+                    {i + 1}
+                  </span>
+                  <TeamBadge team={p.team} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-800 font-medium truncate leading-tight">
+                      {p.name}
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-[family-name:var(--font-data)] text-[9px] text-gray-400 truncate">
+                        {p.team}
+                      </span>
+                      <span className="font-[family-name:var(--font-data)] text-[9px] text-gray-300">
+                        {p.games}j
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="w-12 h-1 bg-gray-100 rounded-full overflow-hidden hidden sm:block">
+                      <div
+                        className="h-full bg-[var(--color-green-primary)] rounded-full transition-all"
+                        style={{ width: `${barPct}%` }}
+                      />
+                    </div>
+                    <span className="font-[family-name:var(--font-heading)] text-sm text-[var(--color-green-primary)] w-8 text-right">
+                      {getValue(p)}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        <p className="font-[family-name:var(--font-data)] text-[8px] text-gray-300 text-center mt-2 uppercase">
+          {valueLabel} | Dados de {new Set(playerStats.map(s => s.game_id)).size} jogos
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Main Sidebar ─── */
+
+export function Sidebar({ standings, upcomingGames, playerStats }: SidebarProps) {
   const leader = standings[0]
   const bestDefense = standings.length > 0
     ? standings.reduce((best, t) =>
@@ -67,10 +291,13 @@ export function Sidebar({ standings, upcomingGames }: SidebarProps) {
         </div>
       </div>
 
+      {/* ═══ DESTAQUES DA RODADA (Player highlights) ═══ */}
+      <PlayerHighlights playerStats={playerStats} />
+
       {/* Upcoming games */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
         <h3 className="font-[family-name:var(--font-heading)] text-lg text-gray-900 mb-4">
-          PRÓXIMOS JOGOS
+          PROXIMOS JOGOS
         </h3>
         <div className="space-y-3">
           {upcomingGames.length === 0 && (
@@ -110,7 +337,7 @@ export function Sidebar({ standings, upcomingGames }: SidebarProps) {
               <span className="text-lg">🏆</span>
               <div>
                 <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-500 uppercase">
-                  Líder
+                  Lider
                 </p>
                 <p className="text-sm font-medium text-gray-900">
                   {leader.team} ({leader.points} pts)
@@ -163,7 +390,7 @@ export function Sidebar({ standings, upcomingGames }: SidebarProps) {
       {/* Glossary */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
         <h3 className="font-[family-name:var(--font-heading)] text-lg text-gray-900 mb-4">
-          GLOSSÁRIO
+          GLOSSARIO
         </h3>
         <div className="space-y-3">
           <div>
@@ -195,7 +422,7 @@ export function Sidebar({ standings, upcomingGames }: SidebarProps) {
               ±PTS (Delta Points)
             </p>
             <p className="text-xs text-gray-500 mt-0.5">
-              Diferença entre pontos reais e xPTS. Positivo = sortudo (fez mais pontos do que merecia). Negativo = azarado (merecia mais pontos).
+              Diferenca entre pontos reais e xPTS. Positivo = sortudo (fez mais pontos do que merecia). Negativo = azarado (merecia mais pontos).
             </p>
           </div>
         </div>
