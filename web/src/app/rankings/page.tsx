@@ -2,6 +2,8 @@ import { fetchAllGames, fetchPlayerStats } from "@/lib/data"
 import { calcStandings } from "@/lib/calculations"
 import { generateInsight } from "@/lib/ai"
 import { RankingsClient } from "@/components/RankingsClient"
+import { Breadcrumb } from "@/components/Breadcrumb"
+import { SeeAlso } from "@/components/SeeAlso"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -85,19 +87,27 @@ export default async function RankingsPage() {
   const [consistentInsight, attackInsight, defenseInsight, wastefulInsight, gkInsight] = await Promise.all(insightPromises)
 
   return (
-    <RankingsClient
-      consistent={consistent.map(c => ({ team: c.team, value: c.value, label: `${c.points}pts reais, ${c.xPTS.toFixed(1)} xPTS` }))}
-      attack={attack.map(a => ({ team: a.team, value: a.value, label: `${a.goalsFor} gols em ${a.played} jogos` }))}
-      defense={defense.map(d => ({ team: d.team, value: d.value, label: `${d.goalsAgainst} gols sofridos em ${d.played} jogos` }))}
-      wasteful={wasteful.map(w => ({ team: w.team, value: w.value, label: `xG: ${w.xG.toFixed(1)}, gols: ${w.goalsFor}` }))}
-      goalkeepers={goalkeepers.map(g => ({ team: `${g.name} (${g.team})`, value: g.savesPerGame, label: `${g.saves} defesas em ${g.games} jogos` }))}
-      insights={{
-        consistent: consistentInsight,
-        attack: attackInsight,
-        defense: defenseInsight,
-        wasteful: wastefulInsight,
-        goalkeepers: gkInsight,
-      }}
-    />
+    <div className="max-w-7xl mx-auto px-4 pt-6">
+      <Breadcrumb items={[{ label: "Rankings" }]} />
+      <RankingsClient
+        consistent={consistent.map(c => ({ team: c.team, value: c.value, label: `${c.points}pts reais, ${c.xPTS.toFixed(1)} xPTS` }))}
+        attack={attack.map(a => ({ team: a.team, value: a.value, label: `${a.goalsFor} gols em ${a.played} jogos` }))}
+        defense={defense.map(d => ({ team: d.team, value: d.value, label: `${d.goalsAgainst} gols sofridos em ${d.played} jogos` }))}
+        wasteful={wasteful.map(w => ({ team: w.team, value: w.value, label: `xG: ${w.xG.toFixed(1)}, gols: ${w.goalsFor}` }))}
+        goalkeepers={goalkeepers.map(g => ({ team: `${g.name} (${g.team})`, value: g.savesPerGame, label: `${g.saves} defesas em ${g.games} jogos` }))}
+        insights={{
+          consistent: consistentInsight,
+          attack: attackInsight,
+          defense: defenseInsight,
+          wasteful: wastefulInsight,
+          goalkeepers: gkInsight,
+        }}
+      />
+      <SeeAlso items={[
+        { href: "/times", title: "Todos os Times", description: "Veja a análise completa de cada clube do Brasileirão" },
+        { href: "/cartola", title: "Cartola FC", description: "Quem escalar na próxima rodada do Cartola" },
+        { href: "/copa-brasil", title: "Copa do Brasil", description: "Confrontos e probabilidades da Copa do Brasil 2026" },
+      ]} />
+    </div>
   )
 }

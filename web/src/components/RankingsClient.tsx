@@ -32,7 +32,7 @@ export function RankingsClient({
   insights,
 }: RankingsClientProps) {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div>
       {/* Hero */}
       <div className="bg-[var(--color-green-dark)] rounded-xl p-6 md:p-8 shadow-lg mb-8">
         <p className="font-[family-name:var(--font-data)] text-[10px] text-green-300 uppercase tracking-widest mb-1">

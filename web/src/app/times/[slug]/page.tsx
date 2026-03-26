@@ -3,6 +3,8 @@ import { calcStandings, parseRoundNumber } from "@/lib/calculations"
 import { TEAMS, getTeamBySlug } from "@/lib/teams"
 import { generateInsight } from "@/lib/ai"
 import { InsightBox } from "@/components/InsightBox"
+import { Breadcrumb } from "@/components/Breadcrumb"
+import { SeeAlso } from "@/components/SeeAlso"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 
@@ -148,12 +150,23 @@ Escreva como texto editorial de portal esportivo. Use dados concretos. Sem títu
     },
   }
 
+  // Neighbors for SeeAlso
+  const teamIndex = standings.findIndex(s => s.team === teamInfo.name)
+  const seeAlsoTeams = standings
+    .filter((_, i) => i !== teamIndex)
+    .slice(0, 3)
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
+      <Breadcrumb items={[
+        { label: "Times", href: "/times" },
+        { label: teamInfo.name },
+      ]} />
 
       {/* Hero */}
       <div className="bg-[var(--color-green-dark)] rounded-xl p-6 md:p-8 shadow-lg mb-8">
@@ -422,6 +435,15 @@ Escreva como texto editorial de portal esportivo. Use dados concretos. Sem títu
           )}
         </div>
       </div>
+
+      <SeeAlso items={[
+        { href: "/rankings", title: "Rankings do Brasileirão", description: "Os rankings mais polêmicos do campeonato" },
+        ...seeAlsoTeams.map(t => ({
+          href: `/times/${TEAMS.find(ti => ti.name === t.team)?.slug || t.team.toLowerCase().replace(/\s+/g, '-')}`,
+          title: t.team,
+          description: `${t.points}pts — ${t.wins}V ${t.draws}E ${t.losses}D`,
+        })),
+      ]} />
     </div>
   )
 }

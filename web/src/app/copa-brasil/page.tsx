@@ -2,6 +2,8 @@ import { fetchCopaBrasilGames, fetchAllGames } from "@/lib/data"
 import { CopaBrasilClient } from "@/components/CopaBrasilClient"
 import { generateInsight } from "@/lib/ai"
 import { calcStandings } from "@/lib/calculations"
+import { Breadcrumb } from "@/components/Breadcrumb"
+import { SeeAlso } from "@/components/SeeAlso"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -37,5 +39,19 @@ Identifique o confronto mais desequilibrado e dê sua opinião sobre quem avanç
 
   const copaInsight = await generateInsight(`copa-brasil-${activePhase.replace(/\s/g, '-').toLowerCase()}`, dataContext)
 
-  return <CopaBrasilClient copaGames={copaGames} brasileiraoGames={brasileiraoGames} copaInsight={copaInsight} />
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <Breadcrumb items={[{ label: "Copa do Brasil" }]} />
+      </div>
+      <CopaBrasilClient copaGames={copaGames} brasileiraoGames={brasileiraoGames} copaInsight={copaInsight} />
+      <div className="max-w-7xl mx-auto px-4">
+        <SeeAlso items={[
+          { href: "/times", title: "Times do Brasileirão", description: "Análise completa de cada clube da Série A" },
+          { href: "/rankings", title: "Rankings", description: "Os rankings mais polêmicos do Brasileirão 2026" },
+          { href: "/cartola", title: "Cartola FC", description: "Quem escalar na próxima rodada" },
+        ]} />
+      </div>
+    </>
+  )
 }

@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { fetchWcGroups, fetchWcGames, fetchWcTeamStats } from "@/lib/data"
 import { CopaMundoClient } from "@/components/CopaMundoClient"
+import { Breadcrumb } from "@/components/Breadcrumb"
+import { SeeAlso } from "@/components/SeeAlso"
 
 export const revalidate = 3600 // 1 hour
 
@@ -16,5 +18,19 @@ export default async function CopaMundoPage() {
     fetchWcTeamStats(),
   ])
 
-  return <CopaMundoClient groups={groups} games={games} teamStats={teamStats} />
+  return (
+    <>
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <Breadcrumb items={[{ label: "Copa do Mundo 2026" }]} />
+      </div>
+      <CopaMundoClient groups={groups} games={games} teamStats={teamStats} />
+      <div className="max-w-7xl mx-auto px-4">
+        <SeeAlso items={[
+          { href: "/", title: "Brasileirão 2026", description: "Classificação, jogos e análises do Brasileirão" },
+          { href: "/times", title: "Times", description: "Análise completa dos 20 clubes da Série A" },
+          { href: "/rankings", title: "Rankings", description: "Os rankings mais polêmicos do Brasileirão" },
+        ]} />
+      </div>
+    </>
+  )
 }

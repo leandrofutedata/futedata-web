@@ -1,6 +1,8 @@
 import { fetchAllGames, fetchPlayerStats, fetchCartolaPlayers, getLatestFinishedRound } from "@/lib/data"
 import { CartolaClient } from "@/components/CartolaClient"
 import { generateInsight } from "@/lib/ai"
+import { Breadcrumb } from "@/components/Breadcrumb"
+import { SeeAlso } from "@/components/SeeAlso"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -46,11 +48,23 @@ Destaque quem está em grande fase e vale escalar. Tom direto de quem manja de C
   const cartolaInsight = await generateInsight(`cartola-rodada-${currentRound}`, dataContext)
 
   return (
-    <CartolaClient
-      games={games}
-      playerStats={playerStats}
-      cartolaPlayers={cartolaPlayers}
-      cartolaInsight={cartolaInsight}
-    />
+    <>
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <Breadcrumb items={[{ label: "Cartola FC" }]} />
+      </div>
+      <CartolaClient
+        games={games}
+        playerStats={playerStats}
+        cartolaPlayers={cartolaPlayers}
+        cartolaInsight={cartolaInsight}
+      />
+      <div className="max-w-7xl mx-auto px-4">
+        <SeeAlso items={[
+          { href: "/times", title: "Times do Brasileirão", description: "Análise completa de cada clube da Série A" },
+          { href: "/rankings", title: "Rankings", description: "Os rankings mais polêmicos do Brasileirão 2026" },
+          { href: "/copa-brasil", title: "Copa do Brasil", description: "Confrontos e probabilidades" },
+        ]} />
+      </div>
+    </>
   )
 }

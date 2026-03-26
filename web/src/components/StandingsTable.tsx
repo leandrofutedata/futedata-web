@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import type { TeamStanding } from "@/lib/types"
 import { getTeamLabel, getZoneColor } from "@/lib/calculations"
+import { getTeamSlug } from "@/lib/teams"
 import { TeamSpotlight } from "./TeamSpotlight"
 
 interface StandingsTableProps {
@@ -96,9 +98,13 @@ export function StandingsTable({ standings }: StandingsTableProps) {
                   </td>
                   <td className="px-2 py-3">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">
+                      <Link
+                        href={`/times/${getTeamSlug(team.team)}`}
+                        className="font-medium text-gray-900 hover:text-[var(--color-green-primary)] transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {team.team}
-                      </span>
+                      </Link>
                       {label && (
                         <span
                           className={`font-[family-name:var(--font-data)] text-[10px] ${label.color} bg-opacity-10 px-1.5 py-0.5 rounded whitespace-nowrap`}
