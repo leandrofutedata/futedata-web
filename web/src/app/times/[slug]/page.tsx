@@ -30,9 +30,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `${teamInfo.name} no Brasileirão 2026: ${position}º lugar, ${standing.points} pontos, ${standing.wins}V ${standing.draws}E ${standing.losses}D. xG: ${standing.xG.toFixed(1)}, xPTS: ${standing.xPTS.toFixed(1)}. Análise completa.`
     : `${teamInfo.fullName} — Estatísticas e análise no Brasileirão 2026 | Futedata`
 
+  const ogTitle = `${teamInfo.name.toUpperCase()} 2026`
+  const ogSubtitle = standing
+    ? `${position}º lugar · ${standing.points}pts · xG ${standing.xG.toFixed(1)}`
+    : 'Estatísticas e Análise'
+
   return {
     title: `${teamInfo.name} 2026 — Estatísticas, Análise e Desempenho | Futedata`,
     description: desc,
+    openGraph: {
+      title: `${teamInfo.name} 2026 — Estatísticas e Desempenho | Futedata`,
+      description: desc,
+      images: [{ url: `/api/og?title=${encodeURIComponent(ogTitle)}&subtitle=${encodeURIComponent(ogSubtitle)}`, width: 1200, height: 630 }],
+    },
   }
 }
 

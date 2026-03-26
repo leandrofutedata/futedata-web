@@ -7,8 +7,13 @@ import { SeeAlso } from "@/components/SeeAlso"
 export const revalidate = 3600 // 1 hour
 
 export const metadata: Metadata = {
-  title: "Copa do Mundo 2026 — Futedata",
-  description: "Grupos, probabilidades, calendario e analise estatistica da Copa do Mundo 2026.",
+  title: "Copa do Mundo 2026 — Grupos e Probabilidades | Futedata",
+  description: "Grupos, probabilidades, calendário e análise estatística da Copa do Mundo 2026. Quem avança? Modelo Elo preditivo.",
+  openGraph: {
+    title: "Copa do Mundo 2026 — Grupos e Probabilidades | Futedata",
+    description: "Grupos, probabilidades e calendário completo da Copa do Mundo 2026.",
+    images: [{ url: "/api/og?title=COPA+DO+MUNDO+2026&subtitle=Grupos%2C+Probabilidades+e+An%C3%A1lise", width: 1200, height: 630 }],
+  },
 }
 
 export default async function CopaMundoPage() {

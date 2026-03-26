@@ -7,8 +7,13 @@ import { SeeAlso } from "@/components/SeeAlso"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Copa do Brasil 2026 — Futedata",
-  description: "Chaveamento, confrontos, probabilidades e analise estatistica da Copa do Brasil 2026.",
+  title: "Copa do Brasil 2026 — Confrontos e Análise | Futedata",
+  description: "Chaveamento, confrontos, probabilidades e análise estatística da Copa do Brasil 2026. Quem avança? Dados reais + modelo preditivo.",
+  openGraph: {
+    title: "Copa do Brasil 2026 — Confrontos e Análise | Futedata",
+    description: "Chaveamento completo com probabilidades e análise de cada confronto.",
+    images: [{ url: "/api/og?title=COPA+DO+BRASIL+2026&subtitle=Confrontos%2C+Probabilidades+e+An%C3%A1lise", width: 1200, height: 630 }],
+  },
 }
 
 export const revalidate = 60

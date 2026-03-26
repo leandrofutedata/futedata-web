@@ -7,6 +7,11 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "Times do Brasileirão 2026 — Estatísticas e Análise | Futedata",
   description: "Todos os 20 times da Série A do Brasileirão 2026. Veja estatísticas, classificação, xG, xPTS e análise completa de cada clube.",
+  openGraph: {
+    title: "Times do Brasileirão 2026 — Todos os 20 Clubes",
+    description: "Estatísticas, classificação e análise completa de cada time da Série A.",
+    images: [{ url: "/api/og?title=TIMES+DO+BRASILEIR%C3%83O&subtitle=Estat%C3%ADsticas+e+An%C3%A1lise+dos+20+Clubes", width: 1200, height: 630 }],
+  },
 }
 
 export const revalidate = 300

@@ -24,6 +24,7 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://futedata.com.br"),
   title: "Futedata — Análise Estatística do Futebol Brasileiro",
   description:
     "O melhor site de estatísticas avançadas do Brasileirão. xG, xGA, xPTS e dados que nenhum outro site brasileiro oferece.",
@@ -35,6 +36,27 @@ export const metadata: Metadata = {
     "futebol brasileiro",
     "série A",
   ],
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Futedata",
+    title: "Futedata — Análise Estatística do Futebol Brasileiro",
+    description: "xG, xGA, xPTS e dados que nenhum outro site brasileiro oferece. Brasileirão, Copa do Brasil, Cartola FC.",
+    images: [
+      {
+        url: "/api/og?title=FUTEDATA&subtitle=An%C3%A1lise+Estat%C3%ADstica+do+Futebol+Brasileiro",
+        width: 1200,
+        height: 630,
+        alt: "Futedata — Análise Estatística do Futebol Brasileiro",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Futedata — Análise Estatística do Futebol Brasileiro",
+    description: "xG, xGA, xPTS e dados que nenhum outro site brasileiro oferece.",
+    images: ["/api/og?title=FUTEDATA&subtitle=An%C3%A1lise+Estat%C3%ADstica+do+Futebol+Brasileiro"],
+  },
 }
 
 export default function RootLayout({
@@ -42,12 +64,25 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Futedata",
+    url: "https://futedata.com.br",
+    description: "Análise estatística avançada do futebol brasileiro",
+    inLanguage: "pt-BR",
+  }
+
   return (
     <html
       lang="pt-BR"
       className={`${bebasNeue.variable} ${syne.variable} ${dmMono.variable} antialiased`}
     >
       <body className="min-h-screen bg-[#FAFAF9] text-gray-900 font-[family-name:var(--font-body)]">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <Navbar />
         <main>{children}</main>
         <footer className="bg-[var(--color-green-dark)] mt-16">

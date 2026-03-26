@@ -6,8 +6,13 @@ import { SeeAlso } from "@/components/SeeAlso"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Cartola FC — Futedata",
-  description: "Recomendacoes inteligentes para o Cartola FC baseadas em estatisticas reais do Brasileirao.",
+  title: "Cartola FC — Recomendações Inteligentes | Futedata",
+  description: "Recomendações inteligentes para o Cartola FC baseadas em estatísticas reais do Brasileirão. Quem escalar, quem evitar, melhores custo-benefício.",
+  openGraph: {
+    title: "Cartola FC — Recomendações Inteligentes | Futedata",
+    description: "Quem escalar na próxima rodada? Nosso modelo analisa rating, gols, consistência e adversário.",
+    images: [{ url: "/api/og?title=CARTOLA+FC&subtitle=Recomenda%C3%A7%C3%B5es+Inteligentes+para+a+Pr%C3%B3xima+Rodada", width: 1200, height: 630 }],
+  },
 }
 
 export const revalidate = 60

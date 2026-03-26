@@ -9,6 +9,11 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "Rankings do Brasileirão 2026 — Quem é o melhor? | Futedata",
   description: "Os rankings mais polêmicos do Brasileirão 2026: ataque mais perigoso, defesa mais sólida, times mais consistentes e muito mais. Baseado em xG, xGA e dados reais.",
+  openGraph: {
+    title: "Rankings do Brasileirão 2026 — Quem é o melhor?",
+    description: "Ataque mais perigoso, defesa mais sólida, times mais consistentes. Rankings baseados em xG e dados reais.",
+    images: [{ url: "/api/og?title=RANKINGS+DO+BRASILEIR%C3%83O&subtitle=Quem+%C3%A9+o+melhor%3F+Dados+reais+de+xG+e+xGA", width: 1200, height: 630 }],
+  },
 }
 
 export const revalidate = 300
