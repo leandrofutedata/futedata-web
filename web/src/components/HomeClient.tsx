@@ -16,6 +16,7 @@ import { Sidebar } from "./Sidebar"
 import { RoundAnalyses } from "./RoundAnalyses"
 import { AnalysisModal } from "./AnalysisModal"
 import { InsightBox } from "./InsightBox"
+import { SeasonProjection } from "./SeasonProjection"
 
 interface HomeClientProps {
   games: Game[]
@@ -105,6 +106,8 @@ export function HomeClient({ games, articles, playerStats, standingsInsight }: H
           {standingsInsight && (
             <InsightBox insight={standingsInsight} label="Visão do Campeonato" />
           )}
+
+          <SeasonProjection standings={standings} />
 
           <RoundNav
             currentRound={currentRound}
