@@ -14,12 +14,28 @@ interface RankingsClientProps {
   defense: RankingEntry[]
   wasteful: RankingEntry[]
   goalkeepers: RankingEntry[]
+  possession: RankingEntry[]
+  shots: RankingEntry[]
+  shotsOnTarget: RankingEntry[]
+  corners: RankingEntry[]
+  passes: RankingEntry[]
+  passAccuracy: RankingEntry[]
+  shotConversion: RankingEntry[]
+  fouls: RankingEntry[]
   insights: {
     consistent: string
     attack: string
     defense: string
     wasteful: string
     goalkeepers: string
+    possession: string
+    shots: string
+    shotsOnTarget: string
+    corners: string
+    passes: string
+    passAccuracy: string
+    shotConversion: string
+    fouls: string
   }
 }
 
@@ -29,8 +45,18 @@ export function RankingsClient({
   defense,
   wasteful,
   goalkeepers,
+  possession,
+  shots,
+  shotsOnTarget,
+  corners,
+  passes,
+  passAccuracy,
+  shotConversion,
+  fouls,
   insights,
 }: RankingsClientProps) {
+  const hasGameStats = possession.length > 0
+
   return (
     <div>
       {/* Hero */}
@@ -54,6 +80,16 @@ export function RankingsClient({
           { id: "defesa", label: "Defesa" },
           { id: "desperdicio", label: "Desperdício" },
           { id: "goleiros", label: "Goleiros" },
+          ...(hasGameStats ? [
+            { id: "posse", label: "Posse" },
+            { id: "finalizacoes", label: "Finalizações" },
+            { id: "chutes-gol", label: "Chutes no Gol" },
+            { id: "escanteios", label: "Escanteios" },
+            { id: "passes", label: "Passes" },
+            { id: "precisao", label: "Precisão" },
+            { id: "conversao", label: "Conversão" },
+            { id: "faltas", label: "Faltas" },
+          ] : []),
         ].map((item) => (
           <a
             key={item.id}
@@ -115,6 +151,99 @@ export function RankingsClient({
           barColor="bg-yellow-500"
           formatValue={(v) => `${v.toFixed(1)} def/jogo`}
         />
+
+        {hasGameStats ? (
+          <>
+            <RankingCard
+              id="posse"
+              title="OS DONOS DA BOLA"
+              subtitle="Posse de bola média (%) — Quem mais controla o jogo?"
+              entries={possession}
+              insight={insights.possession}
+              barColor="bg-purple-500"
+              formatValue={(v) => `${v.toFixed(1)}%`}
+            />
+
+            <RankingCard
+              id="finalizacoes"
+              title="METRALHADORA: QUEM MAIS FINALIZA"
+              subtitle="Finalizações por jogo — Volume ofensivo puro"
+              entries={shots}
+              insight={insights.shots}
+              barColor="bg-red-500"
+              formatValue={(v) => `${v.toFixed(1)} /jogo`}
+            />
+
+            <RankingCard
+              id="chutes-gol"
+              title="PONTARIA CERTEIRA"
+              subtitle="Chutes no gol por jogo — Quem mais acerta o alvo?"
+              entries={shotsOnTarget}
+              insight={insights.shotsOnTarget}
+              barColor="bg-rose-500"
+              formatValue={(v) => `${v.toFixed(1)} /jogo`}
+            />
+
+            <RankingCard
+              id="escanteios"
+              title="PRESSÃO NOS CANTOS"
+              subtitle="Escanteios por jogo — Quem mais pressiona na área?"
+              entries={corners}
+              insight={insights.corners}
+              barColor="bg-teal-500"
+              formatValue={(v) => `${v.toFixed(1)} /jogo`}
+            />
+
+            <RankingCard
+              id="passes"
+              title="FÁBRICA DE PASSES"
+              subtitle="Passes por jogo — Quem mais constrói o jogo?"
+              entries={passes}
+              insight={insights.passes}
+              barColor="bg-indigo-500"
+              formatValue={(v) => `${Math.round(v)} /jogo`}
+            />
+
+            <RankingCard
+              id="precisao"
+              title="RELOJOEIRO: PRECISÃO DE PASSES"
+              subtitle="Precisão de passes (%) — Quem erra menos?"
+              entries={passAccuracy}
+              insight={insights.passAccuracy}
+              barColor="bg-cyan-500"
+              formatValue={(v) => `${v.toFixed(1)}%`}
+            />
+
+            <RankingCard
+              id="conversao"
+              title="MATADOR: CONVERSÃO DE CHUTES"
+              subtitle="Gols por finalização (%) — Quem é mais letal?"
+              entries={shotConversion}
+              insight={insights.shotConversion}
+              barColor="bg-lime-600"
+              formatValue={(v) => `${v.toFixed(1)}%`}
+            />
+
+            <RankingCard
+              id="faltas"
+              title="FAIR PLAY: OS MAIS DISCIPLINADOS"
+              subtitle="Faltas por jogo — Quem joga mais limpo?"
+              entries={fouls}
+              insight={insights.fouls}
+              barColor="bg-amber-500"
+              formatValue={(v) => `${v.toFixed(1)} /jogo`}
+            />
+          </>
+        ) : (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+            <p className="font-[family-name:var(--font-heading)] text-xl text-gray-400 mb-2">
+              RANKINGS DE ESTATÍSTICAS AVANÇADAS
+            </p>
+            <p className="font-[family-name:var(--font-data)] text-xs text-gray-400">
+              Posse, finalizações, escanteios, passes e mais — dados serão atualizados em breve.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
