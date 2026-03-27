@@ -8,11 +8,12 @@ import { ThemeToggle } from "./ThemeToggle"
 
 const links = [
   { href: "/", label: "Brasileirão" },
-  { href: "/copa-brasil", label: "Copa do Brasil" },
-  { href: "/cartola", label: "Cartola FC" },
-  { href: "/copa-mundo-2026", label: "Copa do Mundo 2026" },
-  { href: "/rankings", label: "Rankings" },
   { href: "/times", label: "Times" },
+  { href: "/rankings", label: "Rankings" },
+  { href: "/comparar", label: "Comparar" },
+  { href: "/cartola", label: "Cartola FC" },
+  { href: "/copa-brasil", label: "Copa do Brasil" },
+  { href: "/copa-mundo-2026", label: "Copa 2026" },
 ]
 
 interface SearchResult {
