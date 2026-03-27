@@ -4,6 +4,11 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "Sobre o Futedata — Metodologia e Missão | Futedata",
   description: "Entenda como o Futedata calcula xG, xGA, xPTS e ±PTS. Nossa missão é tornar as estatísticas avançadas do futebol brasileiro acessíveis a todos.",
+  openGraph: {
+    title: "Sobre o Futedata — Metodologia e Missão",
+    description: "Como calculamos xG, xGA, xPTS e ±PTS. Fonte dos dados, modelos estatísticos e a missão do Futedata.",
+    images: [{ url: "/api/og?title=SOBRE+O+FUTEDATA&subtitle=Metodologia+e+Miss%C3%A3o", width: 1200, height: 630 }],
+  },
 }
 
 export default function SobrePage() {

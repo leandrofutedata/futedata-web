@@ -305,9 +305,15 @@ Escreva 3-4 frases avaliando o desempenho e o momento deste jogador. Tom de colu
     "@context": "https://schema.org",
     "@type": "Person",
     name: agg.name,
+    url: `https://futedata.com.br/jogadores/${slug}`,
     jobTitle: posLabel[agg.position] || "Jogador de Futebol",
-    memberOf: { "@type": "SportsTeam", name: agg.team },
+    memberOf: {
+      "@type": "SportsTeam",
+      name: agg.team,
+      ...(teamInfo ? { url: `https://futedata.com.br/times/${teamInfo.slug}`, logo: teamInfo.logo } : {}),
+    },
     sport: "Football",
+    nationality: { "@type": "Country", name: "Brasil" },
   }
 
   const maxRating = perRound.length > 0 ? Math.max(...perRound.filter(r => r.rating).map(r => r.rating!), 7) : 10

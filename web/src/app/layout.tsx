@@ -64,13 +64,24 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const jsonLd = {
+  const webSiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Futedata",
     url: "https://futedata.com.br",
     description: "Análise estatística avançada do futebol brasileiro",
     inLanguage: "pt-BR",
+  }
+
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Futedata",
+    url: "https://futedata.com.br",
+    logo: "https://futedata.com.br/api/og?title=FUTEDATA&subtitle=An%C3%A1lise+Estat%C3%ADstica",
+    description: "Plataforma de análise estatística avançada do futebol brasileiro. xG, xGA, xPTS e dados exclusivos do Brasileirão.",
+    foundingDate: "2026",
+    sameAs: [],
   }
 
   return (
@@ -84,7 +95,11 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
         <Navbar />
         <main>{children}</main>
