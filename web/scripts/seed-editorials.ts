@@ -137,28 +137,43 @@ CONCLUSÃO: Com 19 pontos e 3 de vantagem, o Palmeiras é o favorito claro ao t�
 }
 
 async function main() {
-  console.log("Futedata — Seeding Round Editorials")
-  console.log("====================================\n")
+  console.log("Futedata — Seeding Round Editorials (articles table)")
+  console.log("====================================================\n")
 
   for (const [round, content] of Object.entries(editorials).sort((a, b) => Number(a[0]) - Number(b[0]))) {
-    const key = `round-editorial-${round}`
+    const type = `round-editorial-${round}`
     const headline = content.split("\n")[0].replace(/^MANCHETE:\s*/i, "").trim()
 
-    try {
-      await supabase
-        .from("ai_insights")
-        .upsert(
-          { key, content, created_at: new Date().toISOString() },
-          { onConflict: "key" }
-        )
+    // Delete any existing entry for this round
+    const { error: delErr } = await supabase
+      .from("articles")
+      .delete()
+      .eq("type", type)
+
+    if (delErr) {
+      console.error(`Rodada ${round}: ✗ Erro ao deletar anterior:`, delErr.message)
+      continue
+    }
+
+    // Insert new editorial
+    const { error: insErr } = await supabase
+      .from("articles")
+      .insert({
+        type,
+        title: headline,
+        body: content,
+        published_at: new Date().toISOString(),
+      })
+
+    if (insErr) {
+      console.error(`Rodada ${round}: ✗ Erro ao inserir:`, insErr.message)
+    } else {
       console.log(`Rodada ${round}: ✓ "${headline}"`)
-    } catch (err) {
-      console.error(`Rodada ${round}: ✗ Erro:`, err)
     }
   }
 
-  console.log("\n====================================")
-  console.log("Concluido! 8 editoriais inseridos.")
+  console.log("\n====================================================")
+  console.log("Concluido!")
 }
 
 main().catch(err => {

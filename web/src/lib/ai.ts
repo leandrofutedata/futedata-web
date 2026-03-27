@@ -13,36 +13,32 @@ function getClient(): Anthropic | null {
   return anthropic
 }
 
-interface CachedInsight {
-  id: number
-  key: string
-  content: string
-  created_at: string
-}
-
 async function getCachedInsight(key: string): Promise<string | null> {
   const { data, error } = await supabase
-    .from('ai_insights')
-    .select('*')
-    .eq('key', key)
+    .from('articles')
+    .select('body, created_at')
+    .eq('type', key)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .single()
 
   if (error || !data) return null
 
-  const cached = data as CachedInsight
-  const age = Date.now() - new Date(cached.created_at).getTime()
+  const age = Date.now() - new Date(data.created_at).getTime()
   if (age > CACHE_TTL_MS) return null
 
-  return cached.content
+  return data.body
 }
 
 async function setCachedInsight(key: string, content: string): Promise<void> {
-  await supabase
-    .from('ai_insights')
-    .upsert(
-      { key, content, created_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    )
+  // Remove old cache entry, then insert new
+  await supabase.from('articles').delete().eq('type', key)
+  await supabase.from('articles').insert({
+    type: key,
+    title: key,
+    body: content,
+    published_at: new Date().toISOString(),
+  })
 }
 
 export async function generateInsight(key: string, dataContext: string, options?: { maxTokens?: number; systemPrompt?: string }): Promise<string> {
