@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
 import { TEAMS } from "@/lib/teams"
+import { ThemeToggle } from "./ThemeToggle"
 
 const links = [
   { href: "/", label: "Brasileirão" },
@@ -73,7 +74,7 @@ export function Navbar() {
   }
 
   return (
-    <header className="bg-[#FAFAF9] border-b-[3px] border-b-[var(--color-green-primary)] sticky top-0 z-50">
+    <header className="bg-[#FAFAF9] dark:bg-[#0d1117] border-b-[3px] border-b-[var(--color-green-primary)] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
@@ -106,8 +107,8 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Right side: search + mobile hamburger */}
-          <div className="flex items-center gap-2">
+          {/* Right side: search + theme + mobile hamburger */}
+          <div className="flex items-center gap-1">
             {/* Search */}
             <div ref={searchRef} className="relative">
               <button
@@ -121,7 +122,7 @@ export function Navbar() {
               </button>
 
               {searchOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-[#161b22] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden z-50">
                   <div className="p-3 border-b border-gray-100">
                     <input
                       ref={inputRef}
@@ -135,7 +136,7 @@ export function Navbar() {
                         }
                       }}
                       placeholder="Buscar time ou página..."
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[var(--color-green-primary)] focus:ring-1 focus:ring-[var(--color-green-primary)]"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[var(--color-green-primary)] focus:ring-1 focus:ring-[var(--color-green-primary)]"
                     />
                   </div>
                   {searchQuery.trim().length >= 2 && (
@@ -161,6 +162,9 @@ export function Navbar() {
                 </div>
               )}
             </div>
+
+            {/* Theme toggle */}
+            <ThemeToggle />
 
             {/* Mobile hamburger */}
             <button

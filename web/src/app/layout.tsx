@@ -80,6 +80,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-[#FAFAF9] text-gray-900 font-[family-name:var(--font-body)]">
         <script
+          dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('futedata-theme')==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})()` }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />

@@ -75,3 +75,127 @@ body {
   min-height: 100%;
   border-radius: 2px;
 }
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+:root.dark {
+  --color-background: #0d1117;
+  --color-foreground: #e6edf3;
+  --color-green-light: rgba(0, 132, 61, 0.15);
+}
+
+/* Body */
+:root.dark body {
+  background: #0d1117;
+  color: #e6edf3;
+}
+
+/* Cards and surfaces */
+:root.dark .bg-white {
+  background-color: #161b22 !important;
+}
+
+:root.dark .bg-\[\#FAFAF9\] {
+  background-color: #0d1117 !important;
+}
+
+:root.dark .bg-gray-50 {
+  background-color: #1c2128 !important;
+}
+
+:root.dark .bg-gray-100 {
+  background-color: #21262d !important;
+}
+
+/* Text */
+:root.dark .text-gray-900 {
+  color: #e6edf3 !important;
+}
+
+:root.dark .text-gray-800 {
+  color: #c9d1d9 !important;
+}
+
+:root.dark .text-gray-700 {
+  color: #b1bac4 !important;
+}
+
+:root.dark .text-gray-600 {
+  color: #8b949e !important;
+}
+
+:root.dark .text-gray-500 {
+  color: #8b949e !important;
+}
+
+:root.dark .text-gray-400 {
+  color: #6e7681 !important;
+}
+
+/* Borders */
+:root.dark .border-gray-200 {
+  border-color: #30363d !important;
+}
+
+:root.dark .border-gray-100 {
+  border-color: #21262d !important;
+}
+
+/* Hover states */
+:root.dark .hover\:bg-gray-50:hover {
+  background-color: #1c2128 !important;
+}
+
+:root.dark .hover\:bg-gray-100:hover {
+  background-color: #21262d !important;
+}
+
+:root.dark .hover\:text-gray-900:hover {
+  color: #e6edf3 !important;
+}
+
+/* Shadows */
+:root.dark .shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+:root.dark .shadow-lg {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Scrollbar in dark mode */
+:root.dark .table-scroll::-webkit-scrollbar-track {
+  background: #21262d;
+}
+:root.dark .table-scroll::-webkit-scrollbar-thumb {
+  background: #484f58;
+}
+
+/* Table rows */
+:root.dark tr:hover {
+  background-color: #1c2128 !important;
+}
+
+:root.dark .even\:bg-gray-50\/50:nth-child(even) {
+  background-color: rgba(28, 33, 40, 0.5) !important;
+}
+
+/* Dividers and misc backgrounds */
+:root.dark .bg-gray-900\/20 {
+  background-color: rgba(230, 237, 243, 0.15) !important;
+}
+
+:root.dark .bg-gray-300 {
+  background-color: #484f58 !important;
+}
+
+:root.dark .bg-gray-300\/50 {
+  background-color: rgba(72, 79, 88, 0.5) !important;
+}
+
+/* Fix placeholder text */
+:root.dark input::placeholder {
+  color: #6e7681 !important;
+}
