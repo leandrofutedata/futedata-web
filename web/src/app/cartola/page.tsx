@@ -13,6 +13,11 @@ export const metadata: Metadata = {
     description: "Quem escalar na próxima rodada? Nosso modelo analisa rating, gols, consistência e adversário.",
     images: [{ url: "/api/og?title=CARTOLA+FC&subtitle=Recomenda%C3%A7%C3%B5es+Inteligentes+para+a+Pr%C3%B3xima+Rodada", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cartola FC — Recomendações Inteligentes | Futedata",
+    description: "Quem escalar na próxima rodada? Análise baseada em rating, gols e adversário.",
+  },
 }
 
 export const revalidate = 60

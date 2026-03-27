@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     description: "Grupos, probabilidades e calendário completo da Copa do Mundo 2026.",
     images: [{ url: "/api/og?title=COPA+DO+MUNDO+2026&subtitle=Grupos%2C+Probabilidades+e+An%C3%A1lise", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Copa do Mundo 2026 — Grupos e Probabilidades | Futedata",
+    description: "Grupos, probabilidades e simulação da Copa do Mundo 2026. Modelo Elo preditivo.",
+  },
 }
 
 export default async function CopaMundoPage() {

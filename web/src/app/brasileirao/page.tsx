@@ -15,6 +15,11 @@ export const metadata: Metadata = {
     description: "Dados avançados e análises editoriais do Brasileirão Série A 2026.",
     images: [{ url: "/api/og?title=BRASILEIR%C3%83O+2026&subtitle=Classifica%C3%A7%C3%A3o%2C+Jogos+e+An%C3%A1lises", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Brasileirão 2026 — Classificação e Análises | Futedata",
+    description: "Classificação completa, xG, xGA, xPTS e análises do Brasileirão Série A 2026.",
+  },
 }
 
 export const revalidate = 60

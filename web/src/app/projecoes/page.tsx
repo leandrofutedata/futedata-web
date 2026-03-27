@@ -13,6 +13,11 @@ export const metadata: Metadata = {
     description: "Projeções baseadas em dados reais: xPTS, modelo de 4 fatores e ranking FIFA.",
     images: [{ url: "/api/og?title=PROJE%C3%87%C3%95ES+2026&subtitle=Brasileir%C3%A3o%2C+Copa+do+Brasil+e+Copa+do+Mundo", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Projeções 2026 — Brasileirão, Copa do Brasil e Copa do Mundo",
+    description: "Projeções de final de temporada baseadas em xPTS e modelo de 4 fatores.",
+  },
 }
 
 export const revalidate = 60

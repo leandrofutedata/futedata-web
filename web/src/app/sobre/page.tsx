@@ -9,6 +9,11 @@ export const metadata: Metadata = {
     description: "Como calculamos xG, xGA, xPTS e ±PTS. Fonte dos dados, modelos estatísticos e a missão do Futedata.",
     images: [{ url: "/api/og?title=SOBRE+O+FUTEDATA&subtitle=Metodologia+e+Miss%C3%A3o", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sobre o Futedata — Metodologia e Missão",
+    description: "Como calculamos xG, xGA, xPTS e ±PTS. Fonte dos dados e modelos estatísticos.",
+  },
 }
 
 export default function SobrePage() {

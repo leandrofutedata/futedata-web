@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     description: "Ataque mais perigoso, defesa mais sólida, times mais consistentes. Rankings baseados em xG e dados reais.",
     images: [{ url: "/api/og?title=RANKINGS+DO+BRASILEIR%C3%83O&subtitle=Quem+%C3%A9+o+melhor%3F+Dados+reais+de+xG+e+xGA", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rankings do Brasileirão 2026 — Quem é o melhor?",
+    description: "Ataque, defesa, posse, finalizações e mais. Rankings baseados em dados reais.",
+  },
 }
 
 export const revalidate = 300

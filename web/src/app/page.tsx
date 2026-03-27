@@ -7,12 +7,17 @@ import { getTeamByName } from "@/lib/teams"
 import { Countdown } from "@/components/Countdown"
 
 export const metadata: Metadata = {
-  title: "Futedata — Análise Estatística do Futebol Brasileiro",
-  description: "O melhor site de análise de dados do futebol brasileiro. Brasileirão, Copa do Brasil, Copa do Mundo 2026, Cartola FC.",
+  title: "Futedata — Brasileirão, Copa do Brasil, Copa do Mundo 2026 e Cartola FC",
+  description: "Estatísticas avançadas do futebol brasileiro: xG, xPTS, rankings, projeções e análises do Brasileirão, Copa do Brasil e Copa do Mundo 2026.",
   openGraph: {
-    title: "Futedata — Análise Estatística do Futebol Brasileiro",
+    title: "Futedata — Estatísticas Avançadas do Futebol Brasileiro",
     description: "Brasileirão, Copa do Brasil, Copa do Mundo 2026, Cartola FC — dados que nenhum outro site brasileiro oferece.",
     images: [{ url: "/api/og?title=FUTEDATA&subtitle=An%C3%A1lise+Estat%C3%ADstica+do+Futebol+Brasileiro", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Futedata — Estatísticas Avançadas do Futebol Brasileiro",
+    description: "xG, xPTS, rankings e projeções do Brasileirão, Copa do Brasil e Copa do Mundo 2026.",
   },
 }
 

@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     description: "Acesse o perfil completo de cada time com xG, xPTS e análise detalhada.",
     images: [{ url: "/api/og?title=TIMES&subtitle=Brasileir%C3%A3o+S%C3%A9rie+A+2026", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Times do Brasileirão 2026 — Todos os 20 Clubes",
+    description: "Perfil completo de cada time com xG, xPTS, radar de estilo e análise tática.",
+  },
 }
 
 export const revalidate = 300

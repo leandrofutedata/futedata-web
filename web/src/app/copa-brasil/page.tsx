@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     description: "Chaveamento completo com probabilidades e análise de cada confronto.",
     images: [{ url: "/api/og?title=COPA+DO+BRASIL+2026&subtitle=Confrontos%2C+Probabilidades+e+An%C3%A1lise", width: 1200, height: 630 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Copa do Brasil 2026 — Confrontos e Análise | Futedata",
+    description: "Chaveamento, probabilidades e análise de cada confronto da Copa do Brasil 2026.",
+  },
 }
 
 export const revalidate = 60
