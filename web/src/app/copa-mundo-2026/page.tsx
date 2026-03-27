@@ -31,7 +31,7 @@ export default async function CopaMundoPage() {
       <CopaMundoClient groups={groups} games={games} teamStats={teamStats} />
       <div className="max-w-7xl mx-auto px-4">
         <SeeAlso items={[
-          { href: "/", title: "Brasileirão 2026", description: "Classificação, jogos e análises do Brasileirão" },
+          { href: "/brasileirao", title: "Brasileirão 2026", description: "Classificação, jogos e análises do Brasileirão" },
           { href: "/times", title: "Times", description: "Análise completa dos 20 clubes da Série A" },
           { href: "/rankings", title: "Rankings", description: "Os rankings mais polêmicos do Brasileirão" },
         ]} />

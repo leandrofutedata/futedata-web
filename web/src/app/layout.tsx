@@ -97,7 +97,7 @@ export default function RootLayout({
               </span>
               <nav className="flex flex-wrap gap-x-6 gap-y-2">
                 {[
-                  { href: "/", label: "Brasileirão" },
+                  { href: "/brasileirao", label: "Brasileirão" },
                   { href: "/times", label: "Times" },
                   { href: "/rankings", label: "Rankings" },
                   { href: "/cartola", label: "Cartola FC" },

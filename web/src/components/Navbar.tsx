@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from "react"
 import { TEAMS } from "@/lib/teams"
 
 const links = [
-  { href: "/", label: "Brasileirão" },
+  { href: "/brasileirao", label: "Brasileirão" },
   { href: "/times", label: "Times" },
   { href: "/rankings", label: "Rankings" },
   { href: "/comparar", label: "Comparar" },
@@ -85,10 +85,7 @@ export function Navbar() {
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-0.5">
             {links.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href)
+              const isActive = pathname === link.href || pathname.startsWith(link.href + "/")
               return (
                 <Link
                   key={link.href}
@@ -182,10 +179,7 @@ export function Navbar() {
         {mobileOpen && (
           <nav className="lg:hidden pb-4 border-t border-white/20 pt-2">
             {links.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href)
+              const isActive = pathname === link.href || pathname.startsWith(link.href + "/")
               return (
                 <Link
                   key={link.href}

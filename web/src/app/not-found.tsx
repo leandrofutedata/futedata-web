@@ -16,7 +16,7 @@ export default function NotFound() {
         href="/"
         className="inline-flex items-center gap-2 bg-[var(--color-green-primary)] text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-[var(--color-green-dark)] transition-colors"
       >
-        Voltar para o Brasileirão
+        Voltar para a página inicial
       </Link>
     </div>
   )
