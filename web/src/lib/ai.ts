@@ -45,7 +45,7 @@ async function setCachedInsight(key: string, content: string): Promise<void> {
     )
 }
 
-export async function generateInsight(key: string, dataContext: string): Promise<string> {
+export async function generateInsight(key: string, dataContext: string, options?: { maxTokens?: number; systemPrompt?: string }): Promise<string> {
   // Check cache first
   try {
     const cached = await getCachedInsight(key)
@@ -58,16 +58,18 @@ export async function generateInsight(key: string, dataContext: string): Promise
   if (!client) return ''
 
   try {
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 300,
-      system: `Você é um comentarista esportivo brasileiro. Escreva insights curtos e opinativos sobre futebol.
+    const defaultSystem = `Você é um comentarista esportivo brasileiro. Escreva insights curtos e opinativos sobre futebol.
 Regras:
 - Máximo 3 frases
 - Tom direto, opinativo, engajante — como um comentarista de TV
 - Use dados concretos (números) quando disponíveis
 - Português brasileiro natural
-- Não use aspas, não se apresente, vá direto ao ponto`,
+- Não use aspas, não se apresente, vá direto ao ponto`
+
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: options?.maxTokens ?? 300,
+      system: options?.systemPrompt ?? defaultSystem,
       messages: [
         {
           role: 'user',

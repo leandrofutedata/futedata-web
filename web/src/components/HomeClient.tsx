@@ -15,7 +15,6 @@ import { GameCard } from "./GameCard"
 import { Sidebar } from "./Sidebar"
 import { RoundAnalyses } from "./RoundAnalyses"
 import { AnalysisModal } from "./AnalysisModal"
-import { InsightBox } from "./InsightBox"
 import { SeasonProjection } from "./SeasonProjection"
 
 interface HomeClientProps {
@@ -101,11 +100,7 @@ export function HomeClient({ games, articles, playerStats, standingsInsight }: H
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column — table + round games + analyses */}
         <div className="lg:col-span-2 space-y-6">
-          <StandingsTable standings={standings} />
-
-          {standingsInsight && (
-            <InsightBox insight={standingsInsight} label="Visão do Campeonato" />
-          )}
+          <StandingsTable standings={standings} standingsInsight={standingsInsight} />
 
           <SeasonProjection standings={standings} />
 

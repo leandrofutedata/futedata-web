@@ -9,9 +9,10 @@ import { TeamSpotlight } from "./TeamSpotlight"
 
 interface StandingsTableProps {
   standings: TeamStanding[]
+  standingsInsight?: string
 }
 
-export function StandingsTable({ standings }: StandingsTableProps) {
+export function StandingsTable({ standings, standingsInsight }: StandingsTableProps) {
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null)
 
   return (
@@ -20,6 +21,16 @@ export function StandingsTable({ standings }: StandingsTableProps) {
         <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">
           CLASSIFICAÇÃO — BRASILEIRÃO SÉRIE A
         </h2>
+        {standingsInsight && (
+          <div className="mt-3 border-l-4 border-[var(--color-green-primary)] pl-4 py-2">
+            <p className="font-[family-name:var(--font-data)] text-[10px] uppercase tracking-wide text-[var(--color-green-primary)] font-medium mb-1.5">
+              O que os dados dizem desta rodada
+            </p>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {standingsInsight}
+            </p>
+          </div>
+        )}
       </div>
       <div className="overflow-x-auto table-scroll">
         <table className="w-full text-sm">
