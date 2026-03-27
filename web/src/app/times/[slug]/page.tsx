@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const position = standing ? standings.indexOf(standing) + 1 : null
 
   const desc = standing
-    ? `${teamInfo.name} no Brasileirão 2026: ${position}º lugar, ${standing.points} pontos. xG: ${standing.xG.toFixed(1)}, xPTS: ${standing.xPTS.toFixed(1)}. Análise completa com IA.`
+    ? `${teamInfo.name} no Brasileirão 2026: ${position}º lugar, ${standing.points} pontos. xG: ${standing.xG.toFixed(1)}, xPTS: ${standing.xPTS.toFixed(1)}. Análise completa.`
     : `${teamInfo.fullName} — Perfil completo no Brasileirão 2026 | Futedata`
 
   return {
@@ -426,10 +426,7 @@ Regras:
           {/* BLOCO 3 - ANÁLISE TÁTICA */}
           {tacticalInsight && (
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900">COMO ESTE TIME JOGA</h2>
-                <span className="font-[family-name:var(--font-data)] text-[10px] text-[var(--color-green-primary)] bg-[var(--color-green-light)] px-2 py-0.5 rounded-full font-medium">IA</span>
-              </div>
+              <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900 mb-4">COMO ESTE TIME JOGA</h2>
               <div className="prose prose-sm text-gray-700 leading-relaxed">
                 {tacticalInsight.split('\n').filter(Boolean).map((p, i) => (
                   <p key={i} className="mb-3 text-sm">{p}</p>

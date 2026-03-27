@@ -123,14 +123,9 @@ Regras:
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900">
-            RESUMO DA RODADA {roundNumber}
-          </h2>
-          <span className="font-[family-name:var(--font-data)] text-[10px] text-[var(--color-green-primary)] bg-[var(--color-green-light)] px-2 py-0.5 rounded-full font-medium">
-            IA
-          </span>
-        </div>
+        <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900">
+          RESUMO DA RODADA {roundNumber}
+        </h2>
       </div>
 
       {loading ? (
@@ -179,8 +174,21 @@ Regras:
           )}
         </div>
       ) : (
-        <div className="p-6 text-center">
-          <p className="text-sm text-gray-400">Análise não disponível para esta rodada.</p>
+        <div className="p-6">
+          <h3 className="font-[family-name:var(--font-heading)] text-xl text-gray-900 mb-3">RESULTADOS</h3>
+          <div className="space-y-2">
+            {roundGames.map((g) => {
+              const hg = g.home_goals ?? 0
+              const ag = g.away_goals ?? 0
+              return (
+                <div key={g.id} className="flex items-center gap-3 py-1.5 border-b border-gray-50 last:border-0">
+                  <span className="text-sm font-medium text-right flex-1 truncate">{g.home_team}</span>
+                  <span className="font-[family-name:var(--font-heading)] text-lg text-gray-900 w-14 text-center">{hg} × {ag}</span>
+                  <span className="text-sm font-medium text-left flex-1 truncate">{g.away_team}</span>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>

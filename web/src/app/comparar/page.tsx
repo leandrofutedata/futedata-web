@@ -7,10 +7,10 @@ import type { Metadata } from "next"
 
 export const metadata: Metadata = {
   title: "Comparador de Times — Brasileirão 2026 | Futedata",
-  description: "Compare dois times do Brasileirão 2026 lado a lado. Estatísticas, xG, xPTS, forma e análise completa com IA.",
+  description: "Compare dois times do Brasileirão 2026 lado a lado. Estatísticas, xG, xPTS, forma e análise completa.",
   openGraph: {
     title: "Comparador de Times — Brasileirão 2026",
-    description: "Compare dois times lado a lado com xG, xPTS e análise IA.",
+    description: "Compare dois times lado a lado com xG, xPTS e análise completa.",
     images: [{ url: "/api/og?title=COMPARADOR&subtitle=Brasileir%C3%A3o+2026", width: 1200, height: 630 }],
   },
 }

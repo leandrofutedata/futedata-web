@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const totalAssists = stats.reduce((s, g) => s + g.assists, 0)
   const gamesPlayed = stats.length
 
-  const desc = `${player.player_name} (${player.team}) no Brasileirão 2026: ${gamesPlayed} jogos, ${totalGoals} gols, ${totalAssists} assistências. Perfil completo com radar, evolução e análise IA.`
+  const desc = `${player.player_name} (${player.team}) no Brasileirão 2026: ${gamesPlayed} jogos, ${totalGoals} gols, ${totalAssists} assistências. Perfil completo com radar, evolução e análise.`
 
   return {
     title: `${player.player_name} — Perfil Completo | Futedata`,

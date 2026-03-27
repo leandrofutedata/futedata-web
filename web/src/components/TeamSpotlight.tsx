@@ -297,7 +297,7 @@ Regras:
           ) : aiInsight ? (
             <div className="border-l-4 border-[var(--color-green-primary)] pl-3">
               <p className="text-sm text-gray-700 leading-relaxed">{aiInsight}</p>
-              <p className="font-[family-name:var(--font-data)] text-[9px] text-gray-400 mt-2">Gerado por IA com base nos dados reais</p>
+              <p className="font-[family-name:var(--font-data)] text-[9px] text-gray-400 mt-2">Com base nos dados reais da temporada</p>
             </div>
           ) : (
             <div className="space-y-3">

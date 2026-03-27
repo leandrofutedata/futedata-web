@@ -3,7 +3,7 @@ interface InsightBoxProps {
   label?: string
 }
 
-export function InsightBox({ insight, label = 'Análise IA' }: InsightBoxProps) {
+export function InsightBox({ insight, label = 'Análise' }: InsightBoxProps) {
   if (!insight) return null
 
   return (
