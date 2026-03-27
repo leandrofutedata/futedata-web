@@ -162,7 +162,8 @@ export function HeadToHead({ team, opponents, currentSeasonGames }: HeadToHeadPr
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-      <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900 mb-4">CONFRONTOS DIRETOS</h2>
+      <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900 mb-1">CONFRONTOS DIRETOS</h2>
+      <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400 mb-4">Histórico dos últimos 20 confrontos entre as equipes</p>
 
       {/* Search + opponent selector */}
       <div className="mb-4">
