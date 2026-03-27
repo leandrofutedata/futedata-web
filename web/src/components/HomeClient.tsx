@@ -16,6 +16,7 @@ import { Sidebar } from "./Sidebar"
 import { RoundAnalyses } from "./RoundAnalyses"
 import { AnalysisModal } from "./AnalysisModal"
 import { SeasonProjection } from "./SeasonProjection"
+import { DataExplainer } from "./DataExplainer"
 
 interface HomeClientProps {
   games: Game[]
@@ -101,6 +102,8 @@ export function HomeClient({ games, articles, playerStats, standingsInsight }: H
         {/* Left column — table + round games + analyses */}
         <div className="lg:col-span-2 space-y-6">
           <StandingsTable standings={standings} standingsInsight={standingsInsight} games={games} />
+
+          <DataExplainer standings={standings} />
 
           <SeasonProjection standings={standings} />
 
