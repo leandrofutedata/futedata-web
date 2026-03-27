@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { Game, Article, PlayerStats, CopaBrasilGame, CartolaPlayer, WcGroup, WcGame, WcTeamStats } from './types'
+import type { Game, Article, PlayerStats, CopaBrasilGame, CartolaPlayer, WcGroup, WcGame, WcTeamStats, SquadPlayer } from './types'
 import { parseRoundNumber } from './calculations'
 
 const PAGE_SIZE = 1000
@@ -189,6 +189,21 @@ export async function fetchPlayerStatsByTeam(teamName: string): Promise<PlayerSt
     }
   }
   return rows
+}
+
+export async function fetchSquadByTeam(teamId: number): Promise<SquadPlayer[]> {
+  const { data, error } = await supabase
+    .from('squads')
+    .select('*')
+    .eq('team_id', teamId)
+    .order('position', { ascending: true })
+    .order('number', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching squad:', error.message)
+    return []
+  }
+  return data as SquadPlayer[]
 }
 
 export function getAvailableRounds(games: Game[]): number[] {

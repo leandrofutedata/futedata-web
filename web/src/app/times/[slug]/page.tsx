@@ -1,4 +1,4 @@
-import { fetchAllGames, fetchPlayerStatsByTeam } from "@/lib/data"
+import { fetchAllGames, fetchPlayerStatsByTeam, fetchSquadByTeam } from "@/lib/data"
 import { calcStandings, parseRoundNumber, estimarXG, estimarXGA, calcXPTS } from "@/lib/calculations"
 import { TEAMS, getTeamBySlug, getTeamByName, TEAM_HEADER_COLORS } from "@/lib/teams"
 import { generateInsight } from "@/lib/ai"
@@ -51,9 +51,10 @@ export default async function TeamPage({ params }: PageProps) {
   const teamInfo = getTeamBySlug(slug)
   if (!teamInfo) notFound()
 
-  const [games, playerStats] = await Promise.all([
+  const [games, playerStats, squad] = await Promise.all([
     fetchAllGames(),
     fetchPlayerStatsByTeam(teamInfo.apiName),
+    fetchSquadByTeam(teamInfo.apiId),
   ])
 
   const standings = calcStandings(games)
@@ -89,6 +90,42 @@ export default async function TeamPage({ params }: PageProps) {
     const xPTS = calcXPTS(xG, xGA, played)
 
     evolution.push({ round, pts: cumPTS, xpts: Math.round(xPTS * 10) / 10, gf, xg: Math.round(gameXG * 10) / 10 })
+  }
+
+  // Squad grouped by position
+  const positionOrder = ['Goalkeeper', 'Defender', 'Midfielder', 'Attacker'] as const
+  const positionLabels: Record<string, string> = { 'Goalkeeper': 'Goleiros', 'Defender': 'Defensores', 'Midfielder': 'Meias', 'Attacker': 'Atacantes' }
+  const squadByPosition = positionOrder
+    .map(pos => ({
+      position: pos,
+      label: positionLabels[pos],
+      players: squad.filter(p => p.position === pos).sort((a, b) => (a.number ?? 99) - (b.number ?? 99)),
+    }))
+    .filter(g => g.players.length > 0)
+
+  // Build a map of player_id -> aggregated stats from player_stats for squad enrichment
+  const squadStatsMap = new Map<number, { goals: number; assists: number; games: number; avgRating: number; minutes: number }>()
+  for (const s of playerStats) {
+    if (!squadStatsMap.has(s.player_id)) {
+      squadStatsMap.set(s.player_id, { goals: 0, assists: 0, games: 0, avgRating: 0, minutes: 0 })
+    }
+    const p = squadStatsMap.get(s.player_id)!
+    p.goals += s.goals
+    p.assists += s.assists
+    p.games++
+    p.minutes += s.minutes_played
+  }
+  // Calculate avg rating separately
+  const ratingMap = new Map<number, number[]>()
+  for (const s of playerStats) {
+    if (s.rating) {
+      if (!ratingMap.has(s.player_id)) ratingMap.set(s.player_id, [])
+      ratingMap.get(s.player_id)!.push(s.rating)
+    }
+  }
+  for (const [pid, ratings] of ratingMap) {
+    const entry = squadStatsMap.get(pid)
+    if (entry) entry.avgRating = ratings.reduce((a, b) => a + b, 0) / ratings.length
   }
 
   // League averages for comparison
@@ -312,6 +349,62 @@ Regras:
                     <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[var(--color-green-primary)]" /><span className="font-[family-name:var(--font-data)] text-[10px] text-gray-500">Gols reais</span></div>
                     <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[var(--color-green-primary)]/30" /><span className="font-[family-name:var(--font-data)] text-[10px] text-gray-500">xG</span></div>
                   </div>
+                </div>
+              )}
+
+              {/* Squad */}
+              {squadByPosition.length > 0 && (
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+                  <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900 mb-4">ELENCO</h2>
+                  <div className="space-y-5">
+                    {squadByPosition.map((group) => (
+                      <div key={group.position}>
+                        <h3 className="font-[family-name:var(--font-data)] text-[11px] text-gray-400 uppercase tracking-widest mb-2">{group.label}</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {group.players.map((p) => {
+                            const stats = squadStatsMap.get(p.player_id)
+                            const hasPage = stats && stats.games >= 2
+                            const content = (
+                              <div className={`flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 ${hasPage ? 'hover:bg-gray-50 hover:border-gray-200 transition-colors' : ''}`}>
+                                {p.photo ? (
+                                  <Image src={p.photo} alt={p.player_name} width={36} height={36} className="rounded-full object-cover" />
+                                ) : (
+                                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold font-[family-name:var(--font-data)]" style={{ backgroundColor: teamInfo.color }}>
+                                    {p.player_name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    {p.number && <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">#{p.number}</span>}
+                                    <p className="text-sm font-medium truncate">{p.player_name}</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {p.age && <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">{p.age} anos</span>}
+                                    {stats && stats.games > 0 && (
+                                      <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">
+                                        {stats.games}J{stats.goals > 0 ? ` ${stats.goals}G` : ''}{stats.assists > 0 ? ` ${stats.assists}A` : ''}
+                                      </span>
+                                    )}
+                                    {stats && stats.avgRating > 0 && (
+                                      <span className="font-[family-name:var(--font-data)] text-[10px] text-[var(--color-green-primary)] font-bold">{stats.avgRating.toFixed(1)}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                            return hasPage ? (
+                              <Link key={p.player_id} href={`/jogadores/${playerSlug(p.player_name, p.player_id)}`}>
+                                {content}
+                              </Link>
+                            ) : (
+                              <div key={p.player_id}>{content}</div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-300 mt-4 text-center">{squad.length} jogadores no elenco</p>
                 </div>
               )}
 

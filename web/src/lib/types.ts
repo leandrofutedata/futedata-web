@@ -99,6 +99,17 @@ export interface CartolaPlayer {
   updated_at: string
 }
 
+export interface SquadPlayer {
+  id: number
+  team_id: number
+  player_id: number
+  player_name: string
+  age: number | null
+  number: number | null
+  position: string
+  photo: string | null
+}
+
 export type RoundStatus = 'encerrada' | 'ao-vivo' | 'futura'
 
 export interface WcGroup {
