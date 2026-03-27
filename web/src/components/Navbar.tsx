@@ -12,6 +12,7 @@ const links = [
   { href: "/comparar", label: "Comparar" },
   { href: "/cartola", label: "Cartola FC" },
   { href: "/copa-brasil", label: "Copa do Brasil" },
+  { href: "/projecoes", label: "Projeções" },
   { href: "/copa-mundo-2026", label: "Copa 2026" },
 ]
 

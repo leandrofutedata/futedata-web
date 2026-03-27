@@ -102,6 +102,7 @@ export default function RootLayout({
                   { href: "/rankings", label: "Rankings" },
                   { href: "/cartola", label: "Cartola FC" },
                   { href: "/copa-brasil", label: "Copa do Brasil" },
+                  { href: "/projecoes", label: "Projeções" },
                   { href: "/sobre", label: "Sobre" },
                 ].map((link) => (
                   <a key={link.href} href={link.href} className="font-[family-name:var(--font-data)] text-xs text-white/70 hover:text-white transition-colors">

@@ -4,6 +4,7 @@ import { calcStandings, parseRoundNumber } from "@/lib/calculations"
 import { generateInsight } from "@/lib/ai"
 import { getLatestFinishedRound } from "@/lib/data"
 import { Breadcrumb } from "@/components/Breadcrumb"
+import { SeeAlso } from "@/components/SeeAlso"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -97,6 +98,13 @@ Regras:
         standingsInsight={standingsInsight}
         roundAnalysis={roundAnalysis}
       />
+      <div className="max-w-7xl mx-auto px-4">
+        <SeeAlso items={[
+          { href: "/projecoes", title: "Projeções", description: "Projeção de final de temporada e probabilidades de classificação" },
+          { href: "/times", title: "Times", description: "Análise completa dos 20 clubes da Série A" },
+          { href: "/rankings", title: "Rankings", description: "Os rankings mais polêmicos do Brasileirão" },
+        ]} />
+      </div>
     </>
   )
 }

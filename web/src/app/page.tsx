@@ -305,6 +305,7 @@ export default async function HomePage() {
               { href: "/comparar", label: "Comparador" },
               { href: "/cartola", label: "Cartola FC" },
               { href: "/copa-brasil", label: "Copa do Brasil" },
+              { href: "/projecoes", label: "Projeções" },
               { href: "/copa-mundo-2026", label: "Copa 2026" },
             ].map(link => (
               <Link key={link.href} href={link.href} className="font-[family-name:var(--font-data)] text-xs text-gray-400 hover:text-[var(--color-green-primary)] transition-colors">

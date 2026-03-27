@@ -71,9 +71,9 @@ Identifique o confronto mais desequilibrado e dê sua opinião sobre quem avanç
       <CopaBrasilClient copaGames={copaGames} brasileiraoGames={brasileiraoGames} copaInsight={copaInsight} />
       <div className="max-w-7xl mx-auto px-4">
         <SeeAlso items={[
+          { href: "/projecoes", title: "Projeções", description: "Probabilidades de classificação e projeções de temporada" },
           { href: "/times", title: "Times do Brasileirão", description: "Análise completa de cada clube da Série A" },
           { href: "/rankings", title: "Rankings", description: "Os rankings mais polêmicos do Brasileirão 2026" },
-          { href: "/cartola", title: "Cartola FC", description: "Quem escalar na próxima rodada" },
         ]} />
       </div>
     </>
