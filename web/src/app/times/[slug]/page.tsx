@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb"
 import { SeeAlso } from "@/components/SeeAlso"
 import { SquadSection, type SquadPlayerData } from "@/components/SquadSection"
 import { EvolutionChart } from "@/components/EvolutionChart"
+import { HeadToHead } from "@/components/HeadToHead"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -240,6 +241,23 @@ Regras:
     return { game: g, opponent: oppInfo?.name || opp, isHome: g.home_team === teamInfo.apiName, position: oppIdx >= 0 ? oppIdx + 1 : null }
   })
 
+  // Head-to-head data for client component
+  const h2hGames = finishedGames.map(g => ({
+    id: g.id,
+    round: g.round,
+    date: g.date,
+    homeTeam: g.home_team,
+    awayTeam: g.away_team,
+    homeGoals: g.home_goals,
+    awayGoals: g.away_goals,
+    isHome: g.home_team === teamInfo.apiName,
+  }))
+
+  const h2hOpponents = TEAMS
+    .filter(t => t.slug !== slug)
+    .map(t => ({ apiName: t.apiName, name: t.name, slug: t.slug }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+
   // SeeAlso neighbors
   const seeAlsoTeams = standings.filter(s => s.team !== teamInfo.apiName).slice(0, 3)
 
@@ -368,6 +386,14 @@ Regras:
                   totalPlayers={squad.length}
                 />
               )}
+
+              {/* Head-to-Head */}
+              <HeadToHead
+                teamApiName={teamInfo.apiName}
+                teamName={teamInfo.name}
+                games={h2hGames}
+                opponents={h2hOpponents}
+              />
 
               {/* Last games */}
               {lastGames.length > 0 && (
