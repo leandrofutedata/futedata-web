@@ -13,7 +13,7 @@ interface ProjectedTeam {
   played: number
   xPTSPerGame: number
   projectedPoints: number
-  zone: "libertadores" | "sulamericana" | "none" | "rebaixamento"
+  zone: "libertadores" | "pre-libertadores" | "sulamericana" | "none" | "rebaixamento"
 }
 
 const TOTAL_ROUNDS = 38
@@ -41,7 +41,7 @@ export function SeasonProjection({ standings }: SeasonProjectionProps) {
       .sort((a, b) => b.projectedPoints - a.projectedPoints)
       .map((t, i) => ({
         ...t,
-        zone: (i < 6 ? "libertadores" : i < 12 ? "sulamericana" : i >= standings.length - 3 ? "rebaixamento" : "none") as ProjectedTeam["zone"],
+        zone: (i < 4 ? "libertadores" : i < 6 ? "pre-libertadores" : i < 12 ? "sulamericana" : i >= 16 ? "rebaixamento" : "none") as ProjectedTeam["zone"],
       }))
   }, [standings])
 
@@ -49,15 +49,17 @@ export function SeasonProjection({ standings }: SeasonProjectionProps) {
 
   const maxProjected = Math.max(...projections.map(p => p.projectedPoints))
 
-  const zoneColors = {
-    libertadores: "bg-green-500",
+  const zoneColors: Record<string, string> = {
+    libertadores: "bg-green-700",
+    "pre-libertadores": "bg-green-400",
     sulamericana: "bg-blue-500",
     none: "bg-gray-300",
     rebaixamento: "bg-red-500",
   }
 
-  const zoneBarColors = {
-    libertadores: "bg-green-500",
+  const zoneBarColors: Record<string, string> = {
+    libertadores: "bg-green-700",
+    "pre-libertadores": "bg-green-400",
     sulamericana: "bg-blue-400",
     none: "bg-gray-300",
     rebaixamento: "bg-red-400",
@@ -124,18 +126,22 @@ export function SeasonProjection({ standings }: SeasonProjectionProps) {
       </div>
 
       {/* Legend */}
-      <div className="px-6 py-3 border-t border-gray-100 flex flex-wrap gap-4 text-xs">
+      <div className="px-6 py-3 border-t border-gray-100 flex flex-wrap gap-3 text-xs">
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-green-500" />
-          <span className="text-gray-500">Libertadores (1-6)</span>
+          <span className="w-3 h-3 rounded-full bg-green-700" />
+          <span className="text-gray-500">Libertadores (1-4)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-blue-400" />
+          <span className="w-3 h-3 rounded-full bg-green-400" />
+          <span className="text-gray-500">Pré-Liberta (5-6)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-full bg-blue-500" />
           <span className="text-gray-500">Sul-Americana (7-12)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-red-400" />
-          <span className="text-gray-500">Rebaixamento (18-20)</span>
+          <span className="w-3 h-3 rounded-full bg-red-500" />
+          <span className="text-gray-500">Rebaixamento (17-20)</span>
         </div>
         <div className="flex items-center gap-1.5 ml-auto">
           <span className="w-3 h-3 rounded bg-gray-900/20" />

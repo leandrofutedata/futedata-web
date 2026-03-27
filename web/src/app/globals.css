@@ -9,9 +9,10 @@
   --color-yellow-accent: #F5C800;
   --color-yellow-dark: #B8960A;
   --color-alert-red: #DC2626;
-  --color-zone-libertadores: #2563EB;
-  --color-zone-sulamericana: #16A34A;
-  --color-zone-rebaixamento: #DC2626;
+  --color-zone-libertadores: #15803d;
+  --color-zone-pre-libertadores: #4ade80;
+  --color-zone-sulamericana: #3b82f6;
+  --color-zone-rebaixamento: #ef4444;
   --font-heading: "Bebas Neue", sans-serif;
   --font-body: "Syne", sans-serif;
   --font-data: "DM Mono", monospace;

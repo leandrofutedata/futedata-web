@@ -122,7 +122,7 @@ export function StandingsTable({ standings, standingsInsight, games }: Standings
           {standings.map((team, index) => {
             const position = index + 1
             const label = getTeamLabel(team, position, standings.length)
-            const zoneColor = getZoneColor(position, standings.length)
+            const zoneColor = getZoneColor(position)
             const isExpanded = expandedTeam === team.team
 
             return (
@@ -236,18 +236,22 @@ export function StandingsTable({ standings, standingsInsight, games }: Standings
       </div>
 
       {/* Zone legend */}
-      <div className="px-6 py-3 border-t border-gray-100 flex flex-wrap gap-4 text-xs">
+      <div className="px-6 py-3 border-t border-gray-100 flex flex-wrap gap-3 text-xs">
         <div className="flex items-center gap-1.5">
-          <span className="w-5 h-4 rounded text-[9px] font-bold text-white bg-blue-600 flex items-center justify-center font-[family-name:var(--font-data)]">L</span>
-          <span className="text-gray-500">Libertadores</span>
+          <span className="w-2.5 h-4 rounded-sm bg-green-700" />
+          <span className="text-gray-500">Libertadores (1-4)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-5 h-4 rounded text-[9px] font-bold text-white bg-green-600 flex items-center justify-center font-[family-name:var(--font-data)]">S</span>
-          <span className="text-gray-500">Sul-Americana</span>
+          <span className="w-2.5 h-4 rounded-sm bg-green-400" />
+          <span className="text-gray-500">Pré-Liberta (5-6)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-5 h-4 rounded text-[9px] font-bold text-white bg-red-600 flex items-center justify-center font-[family-name:var(--font-data)]">Z</span>
-          <span className="text-gray-500">Rebaixamento</span>
+          <span className="w-2.5 h-4 rounded-sm bg-blue-500" />
+          <span className="text-gray-500">Sul-Americana (7-12)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-4 rounded-sm bg-red-500" />
+          <span className="text-gray-500">Rebaixamento (17-20)</span>
         </div>
         <div className="flex items-center gap-1.5 ml-auto font-[family-name:var(--font-data)] text-gray-400">
           Clique no time para ver detalhes

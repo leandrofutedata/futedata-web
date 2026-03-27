@@ -135,16 +135,18 @@ export function getTeamLabel(standing: TeamStanding, position: number, totalTeam
   return null
 }
 
-export function getZoneColor(position: number, totalTeams: number): string {
-  if (position <= 4) return 'bg-blue-500' // Libertadores
-  if (position <= 6) return 'bg-green-500' // Sul-Americana
-  if (position > totalTeams - 4) return 'bg-red-500' // Rebaixamento
-  return 'bg-transparent'
+export function getZoneColor(position: number): string {
+  if (position <= 4) return 'bg-green-700' // Libertadores
+  if (position <= 6) return 'bg-green-400' // Pré-Libertadores
+  if (position <= 12) return 'bg-blue-500' // Sul-Americana
+  if (position >= 17) return 'bg-red-500' // Rebaixamento
+  return 'bg-transparent' // Zona neutra (13-16)
 }
 
-export function getZoneLabel(position: number, totalTeams: number): string {
+export function getZoneLabel(position: number): string {
   if (position <= 4) return 'Libertadores'
-  if (position <= 6) return 'Sul-Americana'
-  if (position > totalTeams - 4) return 'Rebaixamento'
+  if (position <= 6) return 'Pré-Libertadores'
+  if (position <= 12) return 'Sul-Americana'
+  if (position >= 17) return 'Rebaixamento'
   return ''
 }

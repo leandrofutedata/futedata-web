@@ -1,5 +1,5 @@
 import { fetchAllGames, fetchPlayerStatsByTeam, fetchSquadByTeam, fetchMarketValuesByTeam } from "@/lib/data"
-import { calcStandings, parseRoundNumber, estimarXG, estimarXGA, calcXPTS } from "@/lib/calculations"
+import { calcStandings, parseRoundNumber, estimarXG, estimarXGA, calcXPTS, getZoneColor, getZoneLabel } from "@/lib/calculations"
 import { TEAMS, getTeamBySlug, getTeamByName, TEAM_HEADER_COLORS } from "@/lib/teams"
 import { generateInsight } from "@/lib/ai"
 import { Breadcrumb } from "@/components/Breadcrumb"
@@ -310,7 +310,13 @@ Regras:
                 </h1>
                 {standing && position && (
                   <div className="flex flex-wrap items-center gap-3 mt-3">
-                    <span className="font-[family-name:var(--font-heading)] text-2xl" style={{ color: isLight ? '#000000' : 'var(--color-yellow-accent)' }}>{position}º lugar</span>
+                    <span className="flex items-center gap-2">
+                      <span className={`w-2 h-6 rounded-sm ${getZoneColor(position)}`} />
+                      <span className="font-[family-name:var(--font-heading)] text-2xl" style={{ color: isLight ? '#000000' : 'var(--color-yellow-accent)' }}>{position}º lugar</span>
+                      {getZoneLabel(position) && (
+                        <span className="font-[family-name:var(--font-data)] text-xs" style={{ color: isLight ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)' }}>{getZoneLabel(position)}</span>
+                      )}
+                    </span>
                     <span className="font-[family-name:var(--font-heading)] text-2xl" style={{ color: hc.secondary }}>{standing.points} pontos</span>
                     <div className="flex gap-0.5">
                       {standing.form.map((r, i) => (
