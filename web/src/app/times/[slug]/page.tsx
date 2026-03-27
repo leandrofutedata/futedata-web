@@ -1,6 +1,6 @@
 import { fetchAllGames, fetchPlayerStatsByTeam } from "@/lib/data"
 import { calcStandings, parseRoundNumber, estimarXG, estimarXGA, calcXPTS } from "@/lib/calculations"
-import { TEAMS, getTeamBySlug, getTeamByName } from "@/lib/teams"
+import { TEAMS, getTeamBySlug, getTeamByName, TEAM_HEADER_COLORS } from "@/lib/teams"
 import { generateInsight } from "@/lib/ai"
 import { Breadcrumb } from "@/components/Breadcrumb"
 import { SeeAlso } from "@/components/SeeAlso"
@@ -194,37 +194,43 @@ Regras:
       <Breadcrumb items={[{ label: "Times", href: "/times" }, { label: teamInfo.name }]} />
 
       {/* BLOCO 1 - HEADER */}
-      <div className="bg-[var(--color-green-dark)] rounded-xl p-6 md:p-8 shadow-lg mb-8">
-        <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className="w-24 h-24 flex items-center justify-center flex-shrink-0">
-            <Image src={teamInfo.logo} alt={`Escudo ${teamInfo.name}`} width={88} height={88} className="object-contain drop-shadow-lg" />
-          </div>
-          <div className="flex-1">
-            <p className="font-[family-name:var(--font-data)] text-[10px] text-green-300 uppercase tracking-widest mb-1">
-              {teamInfo.fullName} — {teamInfo.city}/{teamInfo.state}
-            </p>
-            <h1 className="font-[family-name:var(--font-heading)] text-5xl md:text-6xl text-white">
-              {teamInfo.name.toUpperCase()}
-            </h1>
-            {standing && position && (
-              <div className="flex flex-wrap items-center gap-3 mt-3">
-                <span className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-yellow-accent)]">{position}º lugar</span>
-                <span className="font-[family-name:var(--font-heading)] text-2xl text-white">{standing.points} pontos</span>
-                <div className="flex gap-0.5">
-                  {standing.form.map((r, i) => (
-                    <span key={i} className={`form-${r} w-6 h-6 flex items-center justify-center rounded text-xs font-[family-name:var(--font-data)] font-bold`}>{r}</span>
-                  ))}
-                </div>
+      {(() => {
+        const hc = TEAM_HEADER_COLORS[slug] || { primary: 'var(--color-green-dark)', secondary: '#FFFFFF' }
+        const isLight = ['#F5C518', '#FFFFFF'].includes(hc.primary)
+        return (
+          <div className="rounded-xl p-6 md:p-8 shadow-lg mb-8" style={{ backgroundColor: hc.primary }}>
+            <div className="flex flex-col md:flex-row md:items-center gap-6">
+              <div className="w-24 h-24 flex items-center justify-center flex-shrink-0">
+                <Image src={teamInfo.logo} alt={`Escudo ${teamInfo.name}`} width={88} height={88} className="object-contain drop-shadow-lg" />
+              </div>
+              <div className="flex-1">
+                <p className="font-[family-name:var(--font-data)] text-[10px] uppercase tracking-widest mb-1" style={{ color: isLight ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)' }}>
+                  {teamInfo.fullName} — {teamInfo.city}/{teamInfo.state}
+                </p>
+                <h1 className="font-[family-name:var(--font-heading)] text-5xl md:text-6xl" style={{ color: hc.secondary }}>
+                  {teamInfo.name.toUpperCase()}
+                </h1>
+                {standing && position && (
+                  <div className="flex flex-wrap items-center gap-3 mt-3">
+                    <span className="font-[family-name:var(--font-heading)] text-2xl" style={{ color: isLight ? '#000000' : 'var(--color-yellow-accent)' }}>{position}º lugar</span>
+                    <span className="font-[family-name:var(--font-heading)] text-2xl" style={{ color: hc.secondary }}>{standing.points} pontos</span>
+                    <div className="flex gap-0.5">
+                      {standing.form.map((r, i) => (
+                        <span key={i} className={`form-${r} w-6 h-6 flex items-center justify-center rounded text-xs font-[family-name:var(--font-data)] font-bold`}>{r}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            {headerInsight && (
+              <div className="mt-5 border-l-4 pl-4" style={{ borderColor: isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)' }}>
+                <p className="text-sm leading-relaxed" style={{ color: isLight ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)' }}>{headerInsight}</p>
               </div>
             )}
           </div>
-        </div>
-        {headerInsight && (
-          <div className="mt-5 border-l-4 border-[var(--color-yellow-accent)] pl-4">
-            <p className="text-green-100 text-sm leading-relaxed">{headerInsight}</p>
-          </div>
-        )}
-      </div>
+        )
+      })()}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

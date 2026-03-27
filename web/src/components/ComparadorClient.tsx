@@ -59,8 +59,8 @@ export function ComparadorClient({ standings, teams, playerStatsMap }: Comparado
   const team1 = useMemo(() => teams.find(t => t.slug === slug1), [teams, slug1])
   const team2 = useMemo(() => teams.find(t => t.slug === slug2), [teams, slug2])
 
-  const standing1 = useMemo(() => team1 ? standings.find(s => s.team === team1.name) : null, [standings, team1])
-  const standing2 = useMemo(() => team2 ? standings.find(s => s.team === team2.name) : null, [standings, team2])
+  const standing1 = useMemo(() => team1 ? standings.find(s => s.team === team1.apiName) : null, [standings, team1])
+  const standing2 = useMemo(() => team2 ? standings.find(s => s.team === team2.apiName) : null, [standings, team2])
 
   const pos1 = standing1 ? standings.indexOf(standing1) + 1 : 0
   const pos2 = standing2 ? standings.indexOf(standing2) + 1 : 0
@@ -269,7 +269,21 @@ export function ComparadorClient({ standings, teams, playerStatsMap }: Comparado
         </>
       )}
 
-      {(!standing1 || !standing2) && (
+      {/* Error: team selected but no data */}
+      {(slug1 && team1 && !standing1) && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-center">
+          <p className="font-[family-name:var(--font-heading)] text-lg text-orange-700">Dados insuficientes para {team1.name}</p>
+          <p className="font-[family-name:var(--font-data)] text-xs text-orange-500 mt-1">Não há jogos registrados para este time na temporada atual.</p>
+        </div>
+      )}
+      {(slug2 && team2 && !standing2) && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-center">
+          <p className="font-[family-name:var(--font-heading)] text-lg text-orange-700">Dados insuficientes para {team2.name}</p>
+          <p className="font-[family-name:var(--font-data)] text-xs text-orange-500 mt-1">Não há jogos registrados para este time na temporada atual.</p>
+        </div>
+      )}
+
+      {(!slug1 || !slug2 || !standing1 || !standing2) && !((slug1 && team1 && !standing1) || (slug2 && team2 && !standing2)) && (
         <div className="text-center py-12">
           <p className="font-[family-name:var(--font-heading)] text-2xl text-gray-300 mb-2">
             SELECIONE DOIS TIMES
@@ -305,16 +319,22 @@ function TeamSelector({ label, selected, onChange, teams, teamInfo, standing, po
           <option key={t.slug} value={t.slug}>{t.name}</option>
         ))}
       </select>
-      {teamInfo && standing && (
+      {teamInfo && (
         <div className="mt-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: teamInfo.color }}>
             <span className="font-[family-name:var(--font-heading)] text-sm text-white">{teamInfo.abbr}</span>
           </div>
           <div>
             <p className="font-[family-name:var(--font-heading)] text-lg">{teamInfo.name.toUpperCase()}</p>
-            <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">
-              {position}º · {standing.points}pts · {standing.wins}V {standing.draws}E {standing.losses}D
-            </p>
+            {standing ? (
+              <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">
+                {position}º · {standing.points}pts · {standing.wins}V {standing.draws}E {standing.losses}D
+              </p>
+            ) : (
+              <p className="font-[family-name:var(--font-data)] text-[10px] text-orange-500">
+                Dados insuficientes para este time
+              </p>
+            )}
           </div>
         </div>
       )}

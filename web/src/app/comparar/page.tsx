@@ -21,11 +21,11 @@ export default async function CompararPage() {
   const games = await fetchAllGames()
   const standings = calcStandings(games)
 
-  // Pre-fetch all player stats for all teams
+  // Pre-fetch all player stats for all teams (use apiName for DB query)
   const allPlayerStats = await Promise.all(
     TEAMS.map(async t => ({
       team: t.name,
-      stats: await fetchPlayerStatsByTeam(t.name),
+      stats: await fetchPlayerStatsByTeam(t.apiName),
     }))
   )
 

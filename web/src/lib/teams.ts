@@ -33,6 +33,29 @@ export const TEAMS: TeamInfo[] = [
   { slug: "remo", name: "Remo", apiName: "Remo", fullName: "Clube do Remo", city: "Belém", state: "PA", abbr: "REM", color: "#0D47A1", logo: "https://media.api-sports.io/football/teams/1198.png" },
 ]
 
+export const TEAM_HEADER_COLORS: Record<string, { primary: string; secondary: string }> = {
+  'palmeiras': { primary: '#006437', secondary: '#FFFFFF' },
+  'flamengo': { primary: '#CC0000', secondary: '#000000' },
+  'corinthians': { primary: '#000000', secondary: '#FFFFFF' },
+  'sao-paulo': { primary: '#CC0000', secondary: '#FFFFFF' },
+  'santos': { primary: '#000000', secondary: '#FFFFFF' },
+  'gremio': { primary: '#0066CC', secondary: '#000000' },
+  'internacional': { primary: '#CC0000', secondary: '#FFFFFF' },
+  'cruzeiro': { primary: '#003399', secondary: '#FFFFFF' },
+  'atletico-mg': { primary: '#000000', secondary: '#FFFFFF' },
+  'fluminense': { primary: '#6B0F1A', secondary: '#8B2133' },
+  'vasco': { primary: '#000000', secondary: '#FFFFFF' },
+  'botafogo': { primary: '#000000', secondary: '#FFFFFF' },
+  'bahia': { primary: '#003DA5', secondary: '#E31837' },
+  'athletico-pr': { primary: '#CC0000', secondary: '#000000' },
+  'coritiba': { primary: '#006437', secondary: '#FFFFFF' },
+  'bragantino': { primary: '#CC0000', secondary: '#FFFFFF' },
+  'vitoria': { primary: '#CC0000', secondary: '#000000' },
+  'mirassol': { primary: '#F5C518', secondary: '#000000' },
+  'chapecoense': { primary: '#006437', secondary: '#FFFFFF' },
+  'remo': { primary: '#0D47A1', secondary: '#FFFFFF' },
+}
+
 export function getTeamBySlug(slug: string): TeamInfo | undefined {
   return TEAMS.find(t => t.slug === slug)
 }
