@@ -1,5 +1,5 @@
 import { fetchAllGames, fetchPlayerStatsByTeam, fetchSquadByTeam, fetchMarketValuesByTeam } from "@/lib/data"
-import { calcStandings, parseRoundNumber, estimarXG, estimarXGA, calcXPTS, getZoneColor, getZoneLabel } from "@/lib/calculations"
+import { calcStandings, parseRoundNumber, estimarXG, estimarXGA, calcXPTS, getZoneColor, getZoneLabel, calcTeamGameStats, calcLeagueAvgGameStats } from "@/lib/calculations"
 import { TEAMS, getTeamBySlug, getTeamByName, TEAM_HEADER_COLORS } from "@/lib/teams"
 import { generateInsight } from "@/lib/ai"
 import { Breadcrumb } from "@/components/Breadcrumb"
@@ -8,6 +8,10 @@ import { SquadSection, type SquadPlayerData } from "@/components/SquadSection"
 import { EvolutionChart } from "@/components/EvolutionChart"
 import { GoalsXgChart, type GoalsXgEntry } from "@/components/GoalsXgChart"
 import { HeadToHead } from "@/components/HeadToHead"
+import { TeamRadarChart } from "@/components/TeamRadarChart"
+import { AdvancedStats } from "@/components/AdvancedStats"
+import { SquadHighlights, type HighlightCategory, type HighlightPlayer } from "@/components/SquadHighlights"
+import { PlayerOfSeason, type RadarDim } from "@/components/PlayerOfSeason"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -74,6 +78,10 @@ export default async function TeamPage({ params }: PageProps) {
   const finishedGames = teamGames.filter(g => g.status === 'FT')
   const upcomingGames = teamGames.filter(g => g.status === 'NS').slice(0, 3)
   const lastGames = finishedGames.slice(-5).reverse()
+
+  // Advanced game stats
+  const teamGameStats = calcTeamGameStats(games, teamInfo.apiName)
+  const leagueGameStats = calcLeagueAvgGameStats(games, standings.map(s => s.team))
 
   // Evolution: PTS vs xPTS per round + goals/xG data
   const evolution: { round: number; pts: number; xpts: number; gf: number; xg: number }[] = []
@@ -206,6 +214,84 @@ export default async function TeamPage({ params }: PageProps) {
     .sort((a, b) => b.avgRating - a.avgRating)
     .slice(0, 5)
 
+  // Squad highlights: 5 categories
+  const allPlayers = Array.from(playerMap.values())
+  const squadPhotoMap = new Map(squad.map(s => [s.player_id, s.photo]))
+
+  function makeHighlightPlayer(p: { id: number; name: string; pos: string; games: number }, value: string, rating: number | null): HighlightPlayer {
+    const hasPage = p.games >= 2
+    return {
+      id: p.id,
+      name: p.name,
+      photo: squadPhotoMap.get(p.id) || null,
+      position: p.pos,
+      slug: hasPage ? playerSlug(p.name, p.id) : null,
+      rating,
+      value,
+    }
+  }
+
+  const highlightCategories: HighlightCategory[] = [
+    {
+      title: "Artilheiros",
+      players: allPlayers.filter(p => p.goals > 0).sort((a, b) => b.goals - a.goals).slice(0, 5)
+        .map(p => makeHighlightPlayer(p, `${p.goals} gols`, p.ratings.length > 0 ? p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length : null)),
+    },
+    {
+      title: "Garçons",
+      players: allPlayers.filter(p => p.assists > 0).sort((a, b) => b.assists - a.assists).slice(0, 5)
+        .map(p => makeHighlightPlayer(p, `${p.assists} assist.`, p.ratings.length > 0 ? p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length : null)),
+    },
+    {
+      title: "Criadores",
+      players: allPlayers.filter(p => p.games >= 3).sort((a, b) => (b.passes / b.games) - (a.passes / a.games)).slice(0, 5)
+        .map(p => makeHighlightPlayer(p, `${Math.round(p.passes / p.games)} passes/j`, p.ratings.length > 0 ? p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length : null)),
+    },
+    {
+      title: "Defensores",
+      players: allPlayers.filter(p => p.games >= 3 && (p.pos === "Defender" || p.pos === "Midfielder"))
+        .sort((a, b) => ((b.tackles + b.interceptions) / b.games) - ((a.tackles + a.interceptions) / a.games)).slice(0, 5)
+        .map(p => makeHighlightPlayer(p, `${((p.tackles + p.interceptions) / p.games).toFixed(1)} d+i/j`, p.ratings.length > 0 ? p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length : null)),
+    },
+    {
+      title: "Consistência",
+      players: allPlayers.filter(p => p.ratings.length >= 5)
+        .map(p => ({ ...p, avgR: p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length }))
+        .sort((a, b) => b.avgR - a.avgR).slice(0, 5)
+        .map(p => makeHighlightPlayer(p, `${p.ratings.length} jogos`, p.avgR)),
+    },
+  ]
+
+  // Player of the season
+  const seasonMVP = allPlayers
+    .filter(p => p.ratings.length >= 5)
+    .map(p => ({ ...p, avgRating: p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length }))
+    .sort((a, b) => b.avgRating - a.avgRating)[0] || null
+
+  function normalizeVal(v: number, min: number, max: number): number {
+    return Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100))
+  }
+
+  const mvpRadar: RadarDim[] = seasonMVP ? [
+    { label: "GOLS", value: normalizeVal(seasonMVP.goals / seasonMVP.games * 90 / Math.max(seasonMVP.minutes / seasonMVP.games, 1), 0, 1) },
+    { label: "ASSIST", value: normalizeVal(seasonMVP.assists / seasonMVP.games * 90 / Math.max(seasonMVP.minutes / seasonMVP.games, 1), 0, 0.8) },
+    { label: "PASSES", value: normalizeVal(seasonMVP.passes / seasonMVP.games, 0, 60) },
+    { label: "DESARMES", value: normalizeVal(seasonMVP.tackles / seasonMVP.games, 0, 4) },
+    { label: "DUELOS", value: normalizeVal(seasonMVP.duelsWon / seasonMVP.games, 0, 8) },
+    { label: "RATING", value: normalizeVal(seasonMVP.avgRating, 5.5, 8.5) },
+  ] : []
+
+  const mvpInsight = seasonMVP ? await generateInsight(
+    `player-season-${slug}-${seasonMVP.id}-r${standing?.played || 0}`,
+    `Analise brevemente o jogador ${seasonMVP.name} do ${teamInfo.name} no Brasileirão 2026:
+- Posição: ${seasonMVP.pos}, ${seasonMVP.games} jogos, ${seasonMVP.goals} gols, ${seasonMVP.assists} assistências
+- Rating médio: ${seasonMVP.avgRating.toFixed(2)} (${seasonMVP.ratings.length} jogos avaliados)
+- ${seasonMVP.passes} passes totais, ${seasonMVP.tackles} desarmes, ${seasonMVP.duelsWon} duelos ganhos
+
+Escreva 2 frases sobre por que ele é o destaque da temporada. Tom de colunista.`,
+    { maxTokens: 200 }
+  ) : ''
+
   // AI insights
   const xgPerGame = standing && standing.played > 0 ? standing.xG / standing.played : 0
   const xgaPerGame = standing && standing.played > 0 ? standing.xGA / standing.played : 0
@@ -226,13 +312,17 @@ Escreva 3-4 frases sobre o momento atual. Tom de colunista opinativo.`,
   ) : ''
 
   const tacticalInsight = standing ? await generateInsight(
-    `team-tactical-${slug}-r${standing.played}`,
+    `team-tactical-v2-${slug}-r${standing.played}`,
     `Com base nos dados do ${teamInfo.name} no Brasileirão 2026, descreva como este time joga:
 - xG/jogo: ${xgPerGame.toFixed(2)} (média liga: ${avgXG.toFixed(2)}), gols/jogo: ${gfPerGame.toFixed(2)} (média: ${avgGF.toFixed(2)})
 - xGA/jogo: ${xgaPerGame.toFixed(2)} (média liga: ${avgXGA.toFixed(2)}), gols sofridos/jogo: ${gcPerGame.toFixed(2)} (média: ${avgGA.toFixed(2)})
 - ±PTS: ${standing.deltaPTS > 0 ? '+' : ''}${standing.deltaPTS.toFixed(1)} (${standing.deltaPTS > 2 ? 'eficiente/sortudo' : standing.deltaPTS < -2 ? 'ineficiente/azarado' : 'justo'})
 - SG: ${standing.goalDifference > 0 ? '+' : ''}${standing.goalDifference}
 - Resultado: ${standing.wins}V ${standing.draws}E ${standing.losses}D
+${teamGameStats.gamesWithStats > 0 ? `- Posse: ${teamGameStats.possession}% (liga: ${leagueGameStats.possession}%)
+- Finalizações/jogo: ${teamGameStats.shots} (liga: ${leagueGameStats.shots}), no gol: ${teamGameStats.shotsOnTarget} (liga: ${leagueGameStats.shotsOnTarget})
+- Passes/jogo: ${Math.round(teamGameStats.passes)} (liga: ${Math.round(leagueGameStats.passes)}), precisão: ${teamGameStats.passAccuracy}%
+- Faltas/jogo: ${teamGameStats.fouls} (liga: ${leagueGameStats.fouls}), conversão: ${teamGameStats.shotConversion}%` : ''}
 
 Escreva 3 parágrafos: (1) estilo de jogo baseado nos números, (2) pontos fortes e fracos, (3) comparação com a média da liga. Use dados concretos.`,
     {
@@ -377,6 +467,15 @@ Regras:
                 <GoalsXgChart data={goalsXgData} />
               )}
 
+              {/* Estilo de Jogo — Radar */}
+              <TeamRadarChart teamStats={teamGameStats} leagueStats={leagueGameStats} />
+
+              {/* Estatísticas Avançadas */}
+              <AdvancedStats teamStats={teamGameStats} leagueStats={leagueGameStats} />
+
+              {/* Destaques do Elenco */}
+              <SquadHighlights categories={highlightCategories} teamColor={teamInfo.color} />
+
               {/* Squad */}
               {squadByPositionData.length > 0 && (
                 <SquadSection
@@ -477,6 +576,26 @@ Regras:
                 ))}
               </div>
             </div>
+          )}
+
+          {/* BLOCO - JOGADOR DA TEMPORADA */}
+          {seasonMVP && mvpRadar.length > 0 && (
+            <PlayerOfSeason
+              player={{
+                id: seasonMVP.id,
+                name: seasonMVP.name,
+                photo: squadPhotoMap.get(seasonMVP.id) || null,
+                slug: playerSlug(seasonMVP.name, seasonMVP.id),
+                position: seasonMVP.pos,
+                games: seasonMVP.games,
+                goals: seasonMVP.goals,
+                assists: seasonMVP.assists,
+                avgRating: seasonMVP.avgRating,
+              }}
+              radarDimensions={mvpRadar}
+              aiInsight={mvpInsight}
+              teamColor={teamInfo.color}
+            />
           )}
 
           {/* BLOCO - VALOR DE MERCADO */}

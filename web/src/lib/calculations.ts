@@ -1,4 +1,4 @@
-import type { Game, TeamStanding } from './types'
+import type { Game, TeamStanding, TeamGameStats } from './types'
 
 export function estimarXG(gols: number, jogos: number): number {
   if (jogos === 0) return 0
@@ -149,4 +149,71 @@ export function getZoneLabel(position: number): string {
   if (position <= 12) return 'Sul-Americana'
   if (position >= 17) return 'Rebaixamento'
   return ''
+}
+
+export function calcTeamGameStats(games: Game[], teamApiName: string): TeamGameStats {
+  const teamFTGames = games.filter(
+    g => g.status === 'FT' &&
+    (g.home_team === teamApiName || g.away_team === teamApiName) &&
+    g.home_possession !== null
+  )
+
+  const n = teamFTGames.length
+  if (n === 0) {
+    return { possession: 0, shots: 0, shotsOnTarget: 0, corners: 0, fouls: 0, passes: 0, passAccuracy: 0, goalsPerGame: 0, goalsConcededPerGame: 0, shotConversion: 0, gamesWithStats: 0 }
+  }
+
+  let totalPoss = 0, totalShots = 0, totalSoT = 0, totalCorners = 0
+  let totalFouls = 0, totalPasses = 0, totalPassAcc = 0
+  let totalGF = 0, totalGC = 0
+
+  for (const g of teamFTGames) {
+    const isHome = g.home_team === teamApiName
+    totalPoss += (isHome ? g.home_possession : g.away_possession) ?? 0
+    totalShots += (isHome ? g.home_shots : g.away_shots) ?? 0
+    totalSoT += (isHome ? g.home_shots_on_target : g.away_shots_on_target) ?? 0
+    totalCorners += (isHome ? g.home_corners : g.away_corners) ?? 0
+    totalFouls += (isHome ? g.home_fouls : g.away_fouls) ?? 0
+    totalPasses += (isHome ? g.home_passes : g.away_passes) ?? 0
+    totalPassAcc += (isHome ? g.home_passes_accuracy : g.away_passes_accuracy) ?? 0
+    totalGF += (isHome ? g.home_goals : g.away_goals) ?? 0
+    totalGC += (isHome ? g.away_goals : g.home_goals) ?? 0
+  }
+
+  const totalShotsVal = totalShots || 1
+  return {
+    possession: Math.round((totalPoss / n) * 10) / 10,
+    shots: Math.round((totalShots / n) * 10) / 10,
+    shotsOnTarget: Math.round((totalSoT / n) * 10) / 10,
+    corners: Math.round((totalCorners / n) * 10) / 10,
+    fouls: Math.round((totalFouls / n) * 10) / 10,
+    passes: Math.round((totalPasses / n) * 10) / 10,
+    passAccuracy: Math.round((totalPassAcc / n) * 10) / 10,
+    goalsPerGame: Math.round((totalGF / n) * 100) / 100,
+    goalsConcededPerGame: Math.round((totalGC / n) * 100) / 100,
+    shotConversion: Math.round((totalGF / totalShotsVal) * 1000) / 10,
+    gamesWithStats: n,
+  }
+}
+
+export function calcLeagueAvgGameStats(games: Game[], teamNames: string[]): TeamGameStats {
+  const teamStats = teamNames.map(t => calcTeamGameStats(games, t)).filter(s => s.gamesWithStats > 0)
+  const n = teamStats.length
+  if (n === 0) {
+    return { possession: 50, shots: 0, shotsOnTarget: 0, corners: 0, fouls: 0, passes: 0, passAccuracy: 0, goalsPerGame: 0, goalsConcededPerGame: 0, shotConversion: 0, gamesWithStats: 0 }
+  }
+
+  return {
+    possession: 50,
+    shots: Math.round(teamStats.reduce((s, t) => s + t.shots, 0) / n * 10) / 10,
+    shotsOnTarget: Math.round(teamStats.reduce((s, t) => s + t.shotsOnTarget, 0) / n * 10) / 10,
+    corners: Math.round(teamStats.reduce((s, t) => s + t.corners, 0) / n * 10) / 10,
+    fouls: Math.round(teamStats.reduce((s, t) => s + t.fouls, 0) / n * 10) / 10,
+    passes: Math.round(teamStats.reduce((s, t) => s + t.passes, 0) / n * 10) / 10,
+    passAccuracy: Math.round(teamStats.reduce((s, t) => s + t.passAccuracy, 0) / n * 10) / 10,
+    goalsPerGame: Math.round(teamStats.reduce((s, t) => s + t.goalsPerGame, 0) / n * 100) / 100,
+    goalsConcededPerGame: Math.round(teamStats.reduce((s, t) => s + t.goalsConcededPerGame, 0) / n * 100) / 100,
+    shotConversion: Math.round(teamStats.reduce((s, t) => s + t.shotConversion, 0) / n * 10) / 10,
+    gamesWithStats: Math.round(teamStats.reduce((s, t) => s + t.gamesWithStats, 0) / n),
+  }
 }

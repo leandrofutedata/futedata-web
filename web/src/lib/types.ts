@@ -11,7 +11,35 @@ export interface Game {
   away_goals: number | null
   home_xg: number | null
   away_xg: number | null
+  home_possession: number | null
+  away_possession: number | null
+  home_shots: number | null
+  away_shots: number | null
+  home_shots_on_target: number | null
+  away_shots_on_target: number | null
+  home_corners: number | null
+  away_corners: number | null
+  home_fouls: number | null
+  away_fouls: number | null
+  home_passes: number | null
+  away_passes: number | null
+  home_passes_accuracy: number | null
+  away_passes_accuracy: number | null
   raw_json: Record<string, unknown> | null
+}
+
+export interface TeamGameStats {
+  possession: number
+  shots: number
+  shotsOnTarget: number
+  corners: number
+  fouls: number
+  passes: number
+  passAccuracy: number
+  goalsPerGame: number
+  goalsConcededPerGame: number
+  shotConversion: number
+  gamesWithStats: number
 }
 
 export interface Article {
