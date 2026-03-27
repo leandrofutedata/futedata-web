@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import type { Game, TeamStanding } from "@/lib/types"
 import { getTeamLabel, getZoneColor } from "@/lib/calculations"
-import { getTeamSlug } from "@/lib/teams"
+import { getTeamSlug, getTeamByName } from "@/lib/teams"
 import { TeamSpotlight } from "./TeamSpotlight"
 
 const METRIC_TOOLTIPS: Record<string, string> = {
@@ -150,7 +150,7 @@ export function StandingsTable({ standings, standingsInsight, games }: Standings
                         className="font-medium text-gray-900 hover:text-[var(--color-green-primary)] transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {team.team}
+                        {getTeamByName(team.team)?.name || team.team}
                       </Link>
                       {label && (
                         <span

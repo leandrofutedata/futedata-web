@@ -1,11 +1,12 @@
 import { fetchAllGames, fetchPlayerStatsByTeam } from "@/lib/data"
 import { calcStandings, parseRoundNumber, estimarXG, estimarXGA, calcXPTS } from "@/lib/calculations"
-import { TEAMS, getTeamBySlug } from "@/lib/teams"
+import { TEAMS, getTeamBySlug, getTeamByName } from "@/lib/teams"
 import { generateInsight } from "@/lib/ai"
 import { Breadcrumb } from "@/components/Breadcrumb"
 import { SeeAlso } from "@/components/SeeAlso"
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import type { Metadata } from "next"
 
 export const revalidate = 300
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const games = await fetchAllGames()
   const standings = calcStandings(games)
-  const standing = standings.find(s => s.team === teamInfo.name)
+  const standing = standings.find(s => s.team === teamInfo.apiName)
   const position = standing ? standings.indexOf(standing) + 1 : null
 
   const desc = standing
@@ -52,16 +53,16 @@ export default async function TeamPage({ params }: PageProps) {
 
   const [games, playerStats] = await Promise.all([
     fetchAllGames(),
-    fetchPlayerStatsByTeam(teamInfo.name),
+    fetchPlayerStatsByTeam(teamInfo.apiName),
   ])
 
   const standings = calcStandings(games)
-  const standing = standings.find(s => s.team === teamInfo.name)
+  const standing = standings.find(s => s.team === teamInfo.apiName)
   const position = standing ? standings.indexOf(standing) + 1 : null
 
   // Team games
   const teamGames = games
-    .filter(g => g.home_team === teamInfo.name || g.away_team === teamInfo.name)
+    .filter(g => g.home_team === teamInfo.apiName || g.away_team === teamInfo.apiName)
     .sort((a, b) => a.date.localeCompare(b.date))
 
   const finishedGames = teamGames.filter(g => g.status === 'FT')
@@ -73,7 +74,7 @@ export default async function TeamPage({ params }: PageProps) {
   let cumPTS = 0, cumGF = 0, cumGC = 0, played = 0
   for (const game of finishedGames) {
     const round = parseRoundNumber(game.round)
-    const isHome = game.home_team === teamInfo.name
+    const isHome = game.home_team === teamInfo.apiName
     const gf = isHome ? (game.home_goals ?? 0) : (game.away_goals ?? 0)
     const gc = isHome ? (game.away_goals ?? 0) : (game.home_goals ?? 0)
     const gameXG = isHome ? (game.home_xg ?? gf) : (game.away_xg ?? gf)
@@ -165,15 +166,16 @@ Regras:
 
   // Next opponent positions
   const opponentPositions = upcomingGames.map(g => {
-    const opp = g.home_team === teamInfo.name ? g.away_team : g.home_team
+    const opp = g.home_team === teamInfo.apiName ? g.away_team : g.home_team
+    const oppInfo = getTeamByName(opp)
     const oppIdx = standings.findIndex(s => s.team === opp)
-    return { game: g, opponent: opp, isHome: g.home_team === teamInfo.name, position: oppIdx >= 0 ? oppIdx + 1 : null }
+    return { game: g, opponent: oppInfo?.name || opp, isHome: g.home_team === teamInfo.apiName, position: oppIdx >= 0 ? oppIdx + 1 : null }
   })
 
   const maxPTS = evolution.length > 0 ? Math.max(...evolution.map(e => Math.max(e.pts, e.xpts))) : 1
 
   // SeeAlso neighbors
-  const seeAlsoTeams = standings.filter(s => s.team !== teamInfo.name).slice(0, 3)
+  const seeAlsoTeams = standings.filter(s => s.team !== teamInfo.apiName).slice(0, 3)
 
   // JSON-LD
   const jsonLd = {
@@ -194,8 +196,8 @@ Regras:
       {/* BLOCO 1 - HEADER */}
       <div className="bg-[var(--color-green-dark)] rounded-xl p-6 md:p-8 shadow-lg mb-8">
         <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className="w-24 h-24 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: teamInfo.color }}>
-            <span className="font-[family-name:var(--font-heading)] text-3xl text-white tracking-wider">{teamInfo.abbr}</span>
+          <div className="w-24 h-24 flex items-center justify-center flex-shrink-0">
+            <Image src={teamInfo.logo} alt={`Escudo ${teamInfo.name}`} width={88} height={88} className="object-contain drop-shadow-lg" />
           </div>
           <div className="flex-1">
             <p className="font-[family-name:var(--font-data)] text-[10px] text-green-300 uppercase tracking-widest mb-1">
@@ -313,17 +315,18 @@ Regras:
                   <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900 mb-4">ÚLTIMOS JOGOS</h2>
                   <div className="space-y-2">
                     {lastGames.map((game) => {
-                      const isHome = game.home_team === teamInfo.name
+                      const isHome = game.home_team === teamInfo.apiName
                       const tg = isHome ? game.home_goals : game.away_goals
                       const og = isHome ? game.away_goals : game.home_goals
-                      const opp = isHome ? game.away_team : game.home_team
+                      const oppApi = isHome ? game.away_team : game.home_team
+                      const oppInfo = getTeamByName(oppApi)
                       const result = (tg ?? 0) > (og ?? 0) ? 'V' : (tg ?? 0) < (og ?? 0) ? 'D' : 'E'
                       return (
                         <div key={game.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
                           <span className={`${result === 'V' ? 'bg-green-500' : result === 'D' ? 'bg-red-500' : 'bg-gray-400'} w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold font-[family-name:var(--font-data)]`}>{result}</span>
                           <span className="font-[family-name:var(--font-data)] text-xs text-gray-400 w-6">R{parseRoundNumber(game.round)}</span>
                           <span className="font-[family-name:var(--font-heading)] text-lg text-gray-900">{tg} × {og}</span>
-                          <span className="text-sm font-medium flex-1">{opp}</span>
+                          <span className="text-sm font-medium flex-1">{oppInfo?.name || oppApi}</span>
                           <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-300">{isHome ? 'Casa' : 'Fora'}</span>
                         </div>
                       )
@@ -437,11 +440,14 @@ Regras:
 
       <SeeAlso items={[
         { href: "/comparar", title: "Comparador", description: "Compare times e jogadores lado a lado" },
-        ...seeAlsoTeams.map(t => ({
-          href: `/times/${TEAMS.find(ti => ti.name === t.team)?.slug || t.team.toLowerCase().replace(/\s+/g, '-')}`,
-          title: t.team,
-          description: `${t.points}pts — ${t.wins}V ${t.draws}E ${t.losses}D`,
-        })),
+        ...seeAlsoTeams.map(t => {
+          const ti = getTeamByName(t.team)
+          return {
+            href: `/times/${ti?.slug || t.team.toLowerCase().replace(/\s+/g, '-')}`,
+            title: ti?.name || t.team,
+            description: `${t.points}pts — ${t.wins}V ${t.draws}E ${t.losses}D`,
+          }
+        }),
       ]} />
     </div>
   )

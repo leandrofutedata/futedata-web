@@ -1,5 +1,6 @@
 import { TEAMS } from "@/lib/teams"
 import Link from "next/link"
+import Image from "next/image"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -38,13 +39,14 @@ export default function TimesPage() {
             href={`/times/${team.slug}`}
             className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-lg hover:border-[var(--color-green-primary)]/30 transition-all group flex flex-col items-center text-center"
           >
-            <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110"
-              style={{ backgroundColor: team.color }}
-            >
-              <span className="font-[family-name:var(--font-heading)] text-2xl text-white tracking-wider">
-                {team.abbr}
-              </span>
+            <div className="w-20 h-20 flex items-center justify-center mb-3 transition-transform group-hover:scale-110">
+              <Image
+                src={team.logo}
+                alt={`Escudo ${team.name}`}
+                width={72}
+                height={72}
+                className="object-contain"
+              />
             </div>
             <h2 className="font-[family-name:var(--font-heading)] text-lg text-gray-900 group-hover:text-[var(--color-green-primary)] transition-colors leading-tight">
               {team.name.toUpperCase()}

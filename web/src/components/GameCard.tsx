@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { Game } from "@/lib/types"
-import { getTeamSlug } from "@/lib/teams"
+import { getTeamSlug, getTeamByName } from "@/lib/teams"
 
 interface GameCardProps {
   game: Game
@@ -60,7 +60,7 @@ export function GameCard({ game }: GameCardProps) {
         {/* Home team */}
         <div className="flex-1 text-right">
           <Link href={`/times/${getTeamSlug(game.home_team)}`} className="font-medium text-gray-900 text-sm hover:text-[var(--color-green-primary)] transition-colors">
-            {game.home_team}
+            {getTeamByName(game.home_team)?.name || game.home_team}
           </Link>
         </div>
 
@@ -83,7 +83,7 @@ export function GameCard({ game }: GameCardProps) {
         {/* Away team */}
         <div className="flex-1 text-left">
           <Link href={`/times/${getTeamSlug(game.away_team)}`} className="font-medium text-gray-900 text-sm hover:text-[var(--color-green-primary)] transition-colors">
-            {game.away_team}
+            {getTeamByName(game.away_team)?.name || game.away_team}
           </Link>
         </div>
       </div>

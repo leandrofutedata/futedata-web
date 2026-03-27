@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import type { Game, TeamStanding, PlayerStats } from "@/lib/types"
+import { getTeamByName } from "@/lib/teams"
 
 interface SidebarProps {
   standings: TeamStanding[]
@@ -268,7 +269,7 @@ export function Sidebar({ standings, upcomingGames, playerStats }: SidebarProps)
               <p className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-green-primary)] leading-tight">
                 {bestAttack.xG.toFixed(1)}
               </p>
-              <p className="text-xs font-medium text-gray-900 mt-0.5">{bestAttack.team}</p>
+              <p className="text-xs font-medium text-gray-900 mt-0.5">{getTeamByName(bestAttack.team)?.name || bestAttack.team}</p>
               <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">
                 {(bestAttack.goalsFor / (bestAttack.played || 1)).toFixed(2)}/jogo
               </p>
@@ -282,7 +283,7 @@ export function Sidebar({ standings, upcomingGames, playerStats }: SidebarProps)
               <p className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-alert-red)] leading-tight">
                 {mostUnlucky.deltaPTS.toFixed(1)}
               </p>
-              <p className="text-xs font-medium text-gray-900 mt-0.5">{mostUnlucky.team}</p>
+              <p className="text-xs font-medium text-gray-900 mt-0.5">{getTeamByName(mostUnlucky.team)?.name || mostUnlucky.team}</p>
               <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">
                 merecia +{Math.abs(mostUnlucky.deltaPTS).toFixed(1)} pts
               </p>
@@ -310,7 +311,7 @@ export function Sidebar({ standings, upcomingGames, playerStats }: SidebarProps)
             >
               <div className="flex-1">
                 <p className="font-medium text-gray-800 text-xs">
-                  {game.home_team} vs {game.away_team}
+                  {getTeamByName(game.home_team)?.name || game.home_team} vs {getTeamByName(game.away_team)?.name || game.away_team}
                 </p>
                 <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">
                   {new Date(game.date).toLocaleDateString("pt-BR", {
@@ -340,7 +341,7 @@ export function Sidebar({ standings, upcomingGames, playerStats }: SidebarProps)
                   Lider
                 </p>
                 <p className="text-sm font-medium text-gray-900">
-                  {leader.team} ({leader.points} pts)
+                  {getTeamByName(leader.team)?.name || leader.team} ({leader.points} pts)
                 </p>
               </div>
             </div>
@@ -353,7 +354,7 @@ export function Sidebar({ standings, upcomingGames, playerStats }: SidebarProps)
                   Mais Azarado
                 </p>
                 <p className="text-sm font-medium text-gray-900">
-                  {mostUnlucky.team} ({mostUnlucky.deltaPTS.toFixed(1)} ±PTS)
+                  {getTeamByName(mostUnlucky.team)?.name || mostUnlucky.team} ({mostUnlucky.deltaPTS.toFixed(1)} ±PTS)
                 </p>
               </div>
             </div>
@@ -366,7 +367,7 @@ export function Sidebar({ standings, upcomingGames, playerStats }: SidebarProps)
                   Mais Sortudo
                 </p>
                 <p className="text-sm font-medium text-gray-900">
-                  {mostLucky.team} (+{mostLucky.deltaPTS.toFixed(1)} ±PTS)
+                  {getTeamByName(mostLucky.team)?.name || mostLucky.team} (+{mostLucky.deltaPTS.toFixed(1)} ±PTS)
                 </p>
               </div>
             </div>
@@ -379,7 +380,7 @@ export function Sidebar({ standings, upcomingGames, playerStats }: SidebarProps)
                   Melhor Defesa (xGA)
                 </p>
                 <p className="text-sm font-medium text-gray-900">
-                  {bestDefense.team} ({(bestDefense.xGA / (bestDefense.played || 1)).toFixed(2)}/jogo)
+                  {getTeamByName(bestDefense.team)?.name || bestDefense.team} ({(bestDefense.xGA / (bestDefense.played || 1)).toFixed(2)}/jogo)
                 </p>
               </div>
             </div>

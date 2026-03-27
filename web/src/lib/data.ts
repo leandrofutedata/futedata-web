@@ -2,6 +2,31 @@ import { supabase } from './supabase'
 import type { Game, Article, PlayerStats, CopaBrasilGame, CartolaPlayer, WcGroup, WcGame, WcTeamStats } from './types'
 import { parseRoundNumber } from './calculations'
 
+const PAGE_SIZE = 1000
+
+async function fetchAllRows<T>(table: string, orderBy?: string, orderAsc?: boolean): Promise<T[]> {
+  const rows: T[] = []
+  let from = 0
+  let hasMore = true
+  while (hasMore) {
+    let query = supabase.from(table).select('*').range(from, from + PAGE_SIZE - 1)
+    if (orderBy) query = query.order(orderBy, { ascending: orderAsc ?? true })
+    const { data, error } = await query
+    if (error) {
+      console.error(`Error fetching ${table}:`, error)
+      break
+    }
+    if (data) {
+      rows.push(...(data as T[]))
+      hasMore = data.length === PAGE_SIZE
+      from += PAGE_SIZE
+    } else {
+      hasMore = false
+    }
+  }
+  return rows
+}
+
 export async function fetchAllGames(): Promise<Game[]> {
   const { data, error } = await supabase
     .from('games')
@@ -57,15 +82,7 @@ export async function fetchArticlesByGameId(gameId: number): Promise<Article[]> 
 }
 
 export async function fetchPlayerStats(): Promise<PlayerStats[]> {
-  const { data, error } = await supabase
-    .from('player_stats')
-    .select('*')
-
-  if (error) {
-    console.error('Error fetching player stats:', error)
-    return []
-  }
-  return data as PlayerStats[]
+  return fetchAllRows<PlayerStats>('player_stats')
 }
 
 export async function fetchCopaBrasilGames(): Promise<CopaBrasilGame[]> {
@@ -136,17 +153,42 @@ export async function fetchWcTeamStats(): Promise<WcTeamStats[]> {
   return data as WcTeamStats[]
 }
 
-export async function fetchPlayerStatsByTeam(teamName: string): Promise<PlayerStats[]> {
+export async function fetchPlayerStatsById(playerId: number): Promise<PlayerStats[]> {
   const { data, error } = await supabase
     .from('player_stats')
     .select('*')
-    .eq('team', teamName)
+    .eq('player_id', playerId)
 
   if (error) {
-    console.error('Error fetching player stats for team:', error)
+    console.error('Error fetching player stats by id:', error)
     return []
   }
   return data as PlayerStats[]
+}
+
+export async function fetchPlayerStatsByTeam(teamName: string): Promise<PlayerStats[]> {
+  const rows: PlayerStats[] = []
+  let from = 0
+  let hasMore = true
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('player_stats')
+      .select('*')
+      .eq('team', teamName)
+      .range(from, from + PAGE_SIZE - 1)
+    if (error) {
+      console.error('Error fetching player stats for team:', error)
+      break
+    }
+    if (data) {
+      rows.push(...(data as PlayerStats[]))
+      hasMore = data.length === PAGE_SIZE
+      from += PAGE_SIZE
+    } else {
+      hasMore = false
+    }
+  }
+  return rows
 }
 
 export function getAvailableRounds(games: Game[]): number[] {
