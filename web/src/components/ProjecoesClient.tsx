@@ -493,47 +493,49 @@ function CopaMundoProjection({ wcTeamStats, wcGroups }: { wcTeamStats: WcTeamSta
     // All 32 advancing, seeded by probability_champion
     const all32 = [...advancing, ...best3rd].sort((a, b) => b.probChampion - a.probChampion)
 
-    // Take top 16 for R16 bracket
-    const seeded = all32.slice(0, 16)
-
-    // Standard bracket seeding: 1v16, 8v9, 5v12, 4v13, 3v14, 6v11, 7v10, 2v15
-    const bracketOrder: [number, number][] = [
-      [0, 15], [7, 8], [4, 11], [3, 12],
-      [2, 13], [5, 10], [6, 9], [1, 14],
-    ]
-
-    const oitavas = bracketOrder.map(([a, b]) => ({
-      team1: seeded[a],
-      team2: seeded[b],
-    }))
-
     const pickWinner = (t1: BracketTeam, t2: BracketTeam) =>
       t1.probChampion >= t2.probChampion ? t1 : t2
 
-    const oitavasWinners = oitavas.map(m => pickWinner(m.team1, m.team2))
-
-    // Quartas: adjacent oitavas winners
-    const quartas: { team1: BracketTeam; team2: BracketTeam }[] = []
-    for (let i = 0; i < oitavasWinners.length; i += 2) {
-      quartas.push({ team1: oitavasWinners[i], team2: oitavasWinners[i + 1] })
+    type Match = { team1: BracketTeam; team2: BracketTeam }
+    const pairWinners = (matches: Match[]) => {
+      const winners = matches.map(m => pickWinner(m.team1, m.team2))
+      const next: Match[] = []
+      for (let i = 0; i < winners.length; i += 2) {
+        next.push({ team1: winners[i], team2: winners[i + 1] })
+      }
+      return { winners, next }
     }
-    const quartasWinners = quartas.map(m => pickWinner(m.team1, m.team2))
 
-    // Semi
-    const semi: { team1: BracketTeam; team2: BracketTeam }[] = []
-    for (let i = 0; i < quartasWinners.length; i += 2) {
-      semi.push({ team1: quartasWinners[i], team2: quartasWinners[i + 1] })
-    }
+    // Rodada de 16: 32 teams → 16 matchups (standard bracket seeding)
+    const r32Order: [number, number][] = [
+      [0, 31], [15, 16], [8, 23], [7, 24],
+      [4, 27], [11, 20], [12, 19], [3, 28],
+      [2, 29], [13, 18], [10, 21], [5, 26],
+      [6, 25], [9, 22], [14, 17], [1, 30],
+    ]
+    const rodada16 = r32Order.map(([a, b]) => ({
+      team1: all32[a],
+      team2: all32[b],
+    }))
+
+    // Oitavas de Final: 16 winners → 8 matchups
+    const { next: oitavas } = pairWinners(rodada16)
+
+    // Quartas: 8 winners → 4 matchups
+    const { next: quartas } = pairWinners(oitavas)
+
+    // Semi: 4 winners → 2 matchups
+    const { next: semi } = pairWinners(quartas)
+
+    // Final: 2 winners → 1 matchup
     const semiWinners = semi.map(m => pickWinner(m.team1, m.team2))
-
-    // Final
     const final_ = semiWinners.length >= 2
       ? { team1: semiWinners[0], team2: semiWinners[1] }
       : null
 
     const champion = final_ ? pickWinner(final_.team1, final_.team2) : null
 
-    return { groups, best3rdIds, oitavas, quartas, semi, final: final_, champion }
+    return { groups, best3rdIds, rodada16, oitavas, quartas, semi, final: final_, champion }
   }, [wcTeamStats, wcGroups])
 
   if (!bracket) {
@@ -615,12 +617,31 @@ function CopaMundoProjection({ wcTeamStats, wcGroups }: { wcTeamStats: WcTeamSta
       {/* Connector */}
       <BracketConnector label="32 classificados" />
 
+      {/* RODADA DE 16 */}
+      <div>
+        <div className="flex items-center gap-3 mb-2">
+          <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">RODADA DE 16</h2>
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">16 confrontos · Favorito em destaque</span>
+        </div>
+        <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400 mb-4">
+          Os 24 primeiros colocados + 8 melhores terceiros disputam a Rodada de 16
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          {bracket.rodada16.map((match, i) => (
+            <BracketMatchCard key={i} team1={match.team1} team2={match.team2} />
+          ))}
+        </div>
+      </div>
+
+      <BracketConnector />
+
       {/* OITAVAS DE FINAL */}
       <div>
         <div className="flex items-center gap-3 mb-4">
           <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">OITAVAS DE FINAL</h2>
           <div className="flex-1 h-px bg-gray-200" />
-          <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">8 confrontos · Favorito em destaque</span>
+          <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">8 confrontos</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {bracket.oitavas.map((match, i) => (
