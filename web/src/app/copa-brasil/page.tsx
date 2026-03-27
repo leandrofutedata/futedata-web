@@ -53,6 +53,9 @@ Identifique o confronto mais desequilibrado e dê sua opinião sobre quem avanç
     <>
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <Breadcrumb items={[{ label: "Copa do Brasil" }]} />
+        <p className="text-sm text-gray-600 leading-relaxed mt-2 mb-4">
+          Acompanhe o chaveamento completo da Copa do Brasil 2026, com resultados, datas dos jogos e confrontos de cada fase.
+        </p>
       </div>
 
       {copaInsight && (

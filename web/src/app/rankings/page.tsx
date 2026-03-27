@@ -159,6 +159,9 @@ export default async function RankingsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 pt-6">
       <Breadcrumb items={[{ label: "Rankings" }]} />
+      <p className="text-sm text-gray-600 leading-relaxed mt-2 mb-4">
+        Rankings completos do Brasileirão 2026: artilharia, assistências, defesas menos vazadas, posse de bola e mais estatísticas detalhadas.
+      </p>
       <RankingsClient
         consistent={consistent.map(c => ({ team: c.team, value: c.value, label: `${c.points}pts reais, ${c.xPTS.toFixed(1)} xPTS` }))}
         attack={attack.map(a => ({ team: a.team, value: a.value, label: `${a.goalsFor} gols em ${a.played} jogos` }))}

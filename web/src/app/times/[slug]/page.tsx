@@ -44,10 +44,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `${teamInfo.fullName} — Perfil completo no Brasileirão 2026 | Futedata`
 
   return {
-    title: `${teamInfo.name} 2026 — Perfil Completo | Futedata`,
+    title: `${teamInfo.name} 2026: Estatísticas, Jogos e Classificação | Futedata`,
     description: desc,
     openGraph: {
-      title: `${teamInfo.name} 2026 — Perfil Completo | Futedata`,
+      title: `${teamInfo.name} 2026: Estatísticas, Jogos e Classificação | Futedata`,
       description: desc,
       images: [{ url: `/api/og?title=${encodeURIComponent(teamInfo.name.toUpperCase())}&subtitle=${encodeURIComponent(standing ? `${position}º · ${standing.points}pts · xPTS ${standing.xPTS.toFixed(1)}` : 'Brasileirão 2026')}`, width: 1200, height: 630 }],
     },
@@ -428,6 +428,16 @@ Regras:
           </div>
         )
       })()}
+
+      {/* SEO intro paragraph */}
+      {standing && position && (
+        <p className="text-sm text-gray-600 leading-relaxed mb-6">
+          Acompanhe o desempenho completo do {teamInfo.fullName} no Brasileirão Série A 2026.
+          Atualmente na {position}ª posição com {standing.points} pontos em {standing.played} jogos disputados,
+          o {teamInfo.name} tem {standing.wins} vitória{standing.wins !== 1 ? 's' : ''}, {standing.draws} empate{standing.draws !== 1 ? 's' : ''} e {standing.losses} derrota{standing.losses !== 1 ? 's' : ''} na temporada.
+          Confira estatísticas detalhadas, próximos jogos, últimos resultados, classificação e análise tática baseada em dados avançados como xG, xGA e xPTS.
+        </p>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

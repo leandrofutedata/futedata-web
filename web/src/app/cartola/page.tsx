@@ -61,6 +61,9 @@ Destaque quem está em grande fase e vale escalar. Tom direto de quem manja de C
     <>
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <Breadcrumb items={[{ label: "Cartola FC" }]} />
+        <p className="text-sm text-gray-600 leading-relaxed mt-2 mb-4">
+          Dicas e recomendações para o Cartola FC 2026: melhores escalações, jogadores em alta, custo-benefício e análise por posição.
+        </p>
       </div>
       <CartolaClient
         games={games}

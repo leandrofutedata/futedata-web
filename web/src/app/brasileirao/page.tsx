@@ -95,6 +95,9 @@ Regras:
     <>
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <Breadcrumb items={[{ label: "Brasileirão" }]} />
+        <p className="text-sm text-gray-600 leading-relaxed mt-2 mb-4">
+          Acompanhe a classificação atualizada do Brasileirão Série A 2026, com resultados, estatísticas detalhadas e análise de desempenho de todos os 20 clubes.
+        </p>
       </div>
       <HomeClient
         games={games}

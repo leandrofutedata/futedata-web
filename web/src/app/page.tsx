@@ -1,8 +1,8 @@
 import Link from "next/link"
 import Image from "next/image"
 import type { Metadata } from "next"
-import { fetchAllGames, fetchArticles, fetchCartolaPlayers, fetchCopaBrasilGames, fetchWcGroups, getLatestFinishedRound } from "@/lib/data"
-import { calcStandings } from "@/lib/calculations"
+import { fetchAllGames, fetchArticles, fetchCartolaPlayers, fetchCopaBrasilGames, fetchWcGroups, fetchPlayerStats, getLatestFinishedRound } from "@/lib/data"
+import { calcStandings, parseRoundNumber } from "@/lib/calculations"
 import { getTeamByName } from "@/lib/teams"
 import { Countdown } from "@/components/Countdown"
 
@@ -47,12 +47,13 @@ function extractSection(text: string, marker: string): string {
 }
 
 export default async function HomePage() {
-  const [games, articles, cartolaPlayers, copaGames, wcGroups] = await Promise.all([
+  const [games, articles, cartolaPlayers, copaGames, wcGroups, playerStats] = await Promise.all([
     fetchAllGames(),
     fetchArticles(),
     fetchCartolaPlayers(),
     fetchCopaBrasilGames(),
     fetchWcGroups(),
+    fetchPlayerStats(),
   ])
 
   const standings = calcStandings(games)
@@ -110,8 +111,74 @@ export default async function HomePage() {
     .sort((a, b) => b.published_at.localeCompare(a.published_at))
     .slice(0, 3)
 
+  // Top scorer for FAQ
+  const scorerMap = new Map<number, { name: string; team: string; goals: number }>()
+  for (const s of playerStats) {
+    if (s.goals > 0) {
+      if (!scorerMap.has(s.player_id)) {
+        scorerMap.set(s.player_id, { name: s.player_name, team: s.team, goals: 0 })
+      }
+      scorerMap.get(s.player_id)!.goals += s.goals
+    }
+  }
+  const topScorer = Array.from(scorerMap.values()).sort((a, b) => b.goals - a.goals)[0]
+
+  // Next round date for FAQ
+  const nextRoundGames = games
+    .filter(g => g.status === "NS")
+    .sort((a, b) => a.date.localeCompare(b.date))
+  const nextRoundDate = nextRoundGames[0]
+    ? new Date(nextRoundGames[0].date).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+    : null
+  const nextRoundNumber = nextRoundGames[0] ? parseRoundNumber(nextRoundGames[0].round) : currentRound + 1
+
+  // FAQ data
+  const faqItems = [
+    {
+      question: "Quem é o líder do Brasileirão 2026?",
+      answer: leader
+        ? `O líder do Brasileirão 2026 é o ${leaderInfo?.name || leader.team}, com ${leader.points} pontos em ${leader.played} jogos (${leader.wins} vitórias, ${leader.draws} empates e ${leader.losses} derrotas). O time tem xPTS de ${leader.xPTS.toFixed(1)} e saldo de gols de ${leader.goalDifference > 0 ? '+' : ''}${leader.goalDifference}.`
+        : "A classificação do Brasileirão 2026 está sendo atualizada. Acesse a página do Brasileirão para ver a tabela completa."
+    },
+    {
+      question: "Quem é o artilheiro do Brasileirão 2026?",
+      answer: topScorer
+        ? `O artilheiro do Brasileirão 2026 é ${topScorer.name} (${topScorer.team}), com ${topScorer.goals} gol${topScorer.goals !== 1 ? 's' : ''} marcado${topScorer.goals !== 1 ? 's' : ''} na competição.`
+        : "A artilharia do Brasileirão 2026 está sendo atualizada. Confira os rankings para ver os artilheiros."
+    },
+    {
+      question: "Quando é a próxima rodada do Brasileirão?",
+      answer: nextRoundDate
+        ? `A Rodada ${nextRoundNumber} do Brasileirão 2026 começa em ${nextRoundDate}. Acompanhe os jogos, resultados e análises em tempo real no Futedata.`
+        : `A próxima rodada do Brasileirão 2026 ainda não tem data confirmada. Acompanhe as atualizações no Futedata.`
+    },
+    {
+      question: "O que é xG (Expected Goals)?",
+      answer: "xG (Expected Goals ou Gols Esperados) é uma métrica que mede a qualidade das chances de gol criadas por um time. Em vez de contar apenas os gols marcados, o xG analisa quantos gols um time deveria ter marcado com base nas chances que teve. O Futedata calcula o xG de todos os times do Brasileirão 2026."
+    },
+    {
+      question: "O que é xPTS (Expected Points)?",
+      answer: "xPTS (Expected Points ou Pontos Esperados) calcula quantos pontos um time deveria ter na classificação com base no xG e xGA. A diferença entre pontos reais e xPTS (±PTS) revela quais times estão acima ou abaixo do desempenho esperado — indicando sorte ou azar nos resultados."
+    },
+  ]
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map(item => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+
       {/* HERO SECTION */}
       <section className="bg-gradient-to-br from-[#0d1117] to-[var(--color-green-dark)] relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDYwTDYwIDAiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCBmaWxsPSJ1cmwoI2cpIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+')] opacity-50" />
@@ -301,6 +368,24 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* FAQ SECTION */}
+      <section className="max-w-7xl mx-auto px-4 mt-12">
+        <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900 mb-6 uppercase">Perguntas Frequentes</h2>
+        <div className="space-y-4">
+          {faqItems.map((item, i) => (
+            <details key={i} className="bg-white border border-gray-200 rounded-xl shadow-sm group">
+              <summary className="px-6 py-4 cursor-pointer list-none flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors rounded-xl">
+                <h3 className="text-sm font-medium text-gray-900">{item.question}</h3>
+                <span className="font-[family-name:var(--font-data)] text-gray-400 text-lg flex-shrink-0 group-open:rotate-45 transition-transform">+</span>
+              </summary>
+              <div className="px-6 pb-4">
+                <p className="text-sm text-gray-600 leading-relaxed">{item.answer}</p>
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
 
       {/* FOOTER TAGLINE */}
       <section className="max-w-7xl mx-auto px-4 mt-16 mb-8">
