@@ -110,6 +110,15 @@ export interface SquadPlayer {
   photo: string | null
 }
 
+export interface MarketValue {
+  id: number
+  team_id: number
+  player_name: string
+  position: string | null
+  market_value: number | null
+  currency: string
+}
+
 export type RoundStatus = 'encerrada' | 'ao-vivo' | 'futura'
 
 export interface WcGroup {

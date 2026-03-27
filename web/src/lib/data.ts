@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { Game, Article, PlayerStats, CopaBrasilGame, CartolaPlayer, WcGroup, WcGame, WcTeamStats, SquadPlayer } from './types'
+import type { Game, Article, PlayerStats, CopaBrasilGame, CartolaPlayer, WcGroup, WcGame, WcTeamStats, SquadPlayer, MarketValue } from './types'
 import { parseRoundNumber } from './calculations'
 
 const PAGE_SIZE = 1000
@@ -189,6 +189,20 @@ export async function fetchPlayerStatsByTeam(teamName: string): Promise<PlayerSt
     }
   }
   return rows
+}
+
+export async function fetchMarketValuesByTeam(teamId: number): Promise<MarketValue[]> {
+  const { data, error } = await supabase
+    .from('market_values')
+    .select('*')
+    .eq('team_id', teamId)
+    .order('market_value', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching market values:', error.message)
+    return []
+  }
+  return data as MarketValue[]
 }
 
 export async function fetchSquadByTeam(teamId: number): Promise<SquadPlayer[]> {

@@ -1,4 +1,4 @@
-import { fetchAllGames, fetchPlayerStatsByTeam, fetchSquadByTeam } from "@/lib/data"
+import { fetchAllGames, fetchPlayerStatsByTeam, fetchSquadByTeam, fetchMarketValuesByTeam } from "@/lib/data"
 import { calcStandings, parseRoundNumber, estimarXG, estimarXGA, calcXPTS } from "@/lib/calculations"
 import { TEAMS, getTeamBySlug, getTeamByName, TEAM_HEADER_COLORS } from "@/lib/teams"
 import { generateInsight } from "@/lib/ai"
@@ -51,10 +51,11 @@ export default async function TeamPage({ params }: PageProps) {
   const teamInfo = getTeamBySlug(slug)
   if (!teamInfo) notFound()
 
-  const [games, playerStats, squad] = await Promise.all([
+  const [games, playerStats, squad, marketValues] = await Promise.all([
     fetchAllGames(),
     fetchPlayerStatsByTeam(teamInfo.apiName),
     fetchSquadByTeam(teamInfo.apiId),
+    fetchMarketValuesByTeam(teamInfo.apiId),
   ])
 
   const standings = calcStandings(games)
@@ -126,6 +127,15 @@ export default async function TeamPage({ params }: PageProps) {
   for (const [pid, ratings] of ratingMap) {
     const entry = squadStatsMap.get(pid)
     if (entry) entry.avgRating = ratings.reduce((a, b) => a + b, 0) / ratings.length
+  }
+
+  // Market values
+  const totalMarketValue = marketValues.reduce((sum, mv) => sum + (mv.market_value || 0), 0)
+  const topByValue = marketValues.filter(mv => mv.market_value).slice(0, 5)
+  function formatValue(v: number): string {
+    if (v >= 1_000_000) return `€${(v / 1_000_000).toFixed(1)}M`
+    if (v >= 1_000) return `€${(v / 1_000).toFixed(0)}K`
+    return `€${v}`
   }
 
   // League averages for comparison
@@ -494,6 +504,31 @@ Regras:
                   </Link>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* BLOCO - VALOR DE MERCADO */}
+          {topByValue.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+              <h3 className="font-[family-name:var(--font-heading)] text-lg text-gray-900 mb-1">VALOR DE MERCADO</h3>
+              <p className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-green-primary)] mb-3">{formatValue(totalMarketValue)}</p>
+              <div className="space-y-1.5">
+                {topByValue.map((mv, i) => {
+                  const pct = topByValue[0].market_value ? ((mv.market_value || 0) / topByValue[0].market_value) * 100 : 0
+                  return (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{mv.player_name}</p>
+                        <div className="h-1.5 bg-gray-100 rounded-full mt-0.5">
+                          <div className="h-full bg-[var(--color-green-primary)] rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                      <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-500 whitespace-nowrap">{formatValue(mv.market_value || 0)}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="font-[family-name:var(--font-data)] text-[9px] text-gray-300 mt-3 text-center">Fonte: Transfermarkt</p>
             </div>
           )}
 
