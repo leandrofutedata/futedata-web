@@ -303,6 +303,20 @@ function BrasileraoProjection({ standings }: { standings: TeamStanding[] }) {
    COPA DO BRASIL PROJECTION
    ═══════════════════════════════════════════ */
 
+function TeamLogo({ name, logo, size = 8 }: { name: string; logo: string | null; size?: number }) {
+  if (logo) {
+    return <img src={logo} alt={name} className={`w-${size} h-${size} object-contain`} style={{ width: size * 4, height: size * 4 }} loading="lazy" />
+  }
+  const initials = name.split(" ").length >= 2
+    ? (name.split(" ")[0][0] + name.split(" ").slice(-1)[0][0]).toUpperCase()
+    : name.slice(0, 2).toUpperCase()
+  return (
+    <div className="rounded-full bg-gray-300 flex items-center justify-center text-white font-bold" style={{ width: size * 4, height: size * 4, fontSize: size * 1.5 }}>
+      {initials}
+    </div>
+  )
+}
+
 function CopaBrasilProjection({ copaGames, standings }: { copaGames: CopaBrasilGame[]; standings: TeamStanding[] }) {
   const gamesByFase = useMemo(() => {
     const map = new Map<string, CopaBrasilGame[]>()
@@ -313,12 +327,10 @@ function CopaBrasilProjection({ copaGames, standings }: { copaGames: CopaBrasilG
     return map
   }, [copaGames])
 
-  // Active phase: most advanced with pending games
   const activeFase = useMemo(() => {
     const all = [...MAIN_PHASES].reverse()
     for (const fase of all) {
-      const faseGames = gamesByFase.get(fase)
-      if (faseGames?.some((g) => g.status !== "FT")) return fase
+      if (gamesByFase.get(fase)?.some((g) => g.status !== "FT")) return fase
     }
     for (const fase of all) {
       if (gamesByFase.has(fase)) return fase
@@ -326,48 +338,54 @@ function CopaBrasilProjection({ copaGames, standings }: { copaGames: CopaBrasilG
     return MAIN_PHASES[0]
   }, [gamesByFase])
 
-  // Build team analyses cache
   const teamAnalysisCache = useMemo(() => {
     const cache = new Map<string, ReturnType<typeof buildTeamAnalysis>>()
     const allTeams = new Set<string>()
-    for (const g of copaGames) {
-      allTeams.add(g.home_team)
-      allTeams.add(g.away_team)
-    }
-    for (const team of allTeams) {
-      cache.set(team, buildTeamAnalysis(team, standings))
-    }
+    for (const g of copaGames) { allTeams.add(g.home_team); allTeams.add(g.away_team) }
+    for (const team of allTeams) cache.set(team, buildTeamAnalysis(team, standings))
     return cache
   }, [copaGames, standings])
 
-  const getAnalysis = (team: string) =>
-    teamAnalysisCache.get(team) || buildTeamAnalysis(team, standings)
+  const getAnalysis = (team: string) => teamAnalysisCache.get(team) || buildTeamAnalysis(team, standings)
 
-  // Get confrontos for active phase
-  const confrontos = useMemo(() => {
+  // Build projected results for the active phase
+  const projectedTeams = useMemo(() => {
     const faseGames = gamesByFase.get(activeFase) || []
-    const all = groupConfrontos(faseGames)
-    return all
-      .filter(c => c.status !== "finalizado")
-      .sort((a, b) => {
-        const strA = getAnalysis(a.homeTeam).strengthIndex + getAnalysis(a.awayTeam).strengthIndex
-        const strB = getAnalysis(b.homeTeam).strengthIndex + getAnalysis(b.awayTeam).strengthIndex
-        return strB - strA
-      })
-  }, [gamesByFase, activeFase, teamAnalysisCache])
+    const confrontos = groupConfrontos(faseGames)
+
+    return confrontos.map(c => {
+      const hA = getAnalysis(c.homeTeam)
+      const aA = getAnalysis(c.awayTeam)
+      const prob = calcProbability(c, hA, aA)
+
+      // Find logos from games data
+      const homeLogo = copaGames.find(g => g.home_team === c.homeTeam)?.home_logo || c.homeLogo
+      const awayLogo = copaGames.find(g => g.away_team === c.awayTeam)?.away_logo || c.awayLogo
+
+      if (c.status === "finalizado") {
+        return {
+          team: c.winner || c.homeTeam,
+          logo: c.winner === c.awayTeam ? awayLogo : homeLogo,
+          badge: "CLASSIFICADO" as const,
+          status: "finalizado" as const,
+        }
+      }
+
+      const favorite = prob.homeClassify >= prob.awayClassify ? c.homeTeam : c.awayTeam
+      const favoriteLogo = favorite === c.awayTeam ? awayLogo : homeLogo
+      return {
+        team: favorite,
+        logo: favoriteLogo,
+        badge: "FAVORITO" as const,
+        status: "pendente" as const,
+      }
+    })
+  }, [gamesByFase, activeFase, teamAnalysisCache, copaGames])
 
   if (copaGames.length === 0) {
     return (
       <div className="text-center py-20">
         <p className="text-gray-400 text-sm">Nenhum jogo da Copa do Brasil encontrado.</p>
-      </div>
-    )
-  }
-
-  if (confrontos.length === 0) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-gray-400 text-sm">Todos os confrontos da {activeFase} já foram encerrados.</p>
       </div>
     )
   }
@@ -380,113 +398,145 @@ function CopaBrasilProjection({ copaGames, standings }: { copaGames: CopaBrasilG
           {activeFase.toUpperCase()}
         </h2>
         <div className="flex-1 h-px bg-gray-200" />
-        <span className="font-[family-name:var(--font-data)] text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-green-light)] text-[var(--color-green-primary)]">
-          {confrontos.length} confrontos pendentes
+        <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-500">
+          Projeção de classificados para a próxima fase
         </span>
       </div>
 
-      {/* Confrontos list */}
-      <div className="space-y-4">
-        {confrontos.map((c) => {
-          const hA = getAnalysis(c.homeTeam)
-          const aA = getAnalysis(c.awayTeam)
-          const prob = calcProbability(c, hA, aA)
-          const homeLogo = copaGames.find(g => g.home_team === c.homeTeam)?.home_logo || c.homeLogo
-          const awayLogo = copaGames.find(g => g.away_team === c.awayTeam)?.away_logo || c.awayLogo
-
-          return (
-            <div key={c.id} className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-              <div className="flex items-center justify-between gap-4">
-                {/* Home team */}
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  {homeLogo ? (
-                    <img src={homeLogo} alt={c.homeTeam} className="w-8 h-8 object-contain" loading="lazy" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-[var(--color-green-primary)] flex items-center justify-center text-white text-[9px] font-bold">
-                      {c.homeTeam.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{c.homeTeam}</p>
-                    {hA.standing && (
-                      <p className="font-[family-name:var(--font-data)] text-[9px] text-gray-500">
-                        {hA.position}º no BR · Forca {hA.strengthIndex}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Probability */}
-                <div className="flex flex-col items-center w-40 flex-shrink-0">
-                  <div className="flex items-center gap-2 w-full mb-1">
-                    <span className="font-[family-name:var(--font-heading)] text-lg text-[var(--color-green-primary)]">
-                      {prob.homeClassify}%
-                    </span>
-                    <div className="flex-1 h-2.5 rounded-full overflow-hidden flex bg-gray-200">
-                      <div className="h-full bg-[var(--color-green-primary)] transition-all" style={{ width: `${prob.homeClassify}%` }} />
-                      <div className="h-full bg-blue-500 transition-all" style={{ width: `${prob.awayClassify}%` }} />
-                    </div>
-                    <span className="font-[family-name:var(--font-heading)] text-lg text-blue-600">
-                      {prob.awayClassify}%
-                    </span>
-                  </div>
-                  <span className="font-[family-name:var(--font-data)] text-[8px] text-gray-400 uppercase">
-                    {prob.dominantFactor}
-                  </span>
-                  {prob.scenarioText && (
-                    <span className="font-[family-name:var(--font-data)] text-[9px] text-[var(--color-yellow-dark)] mt-0.5">
-                      {prob.scenarioText}
-                    </span>
-                  )}
-                </div>
-
-                {/* Away team */}
-                <div className="flex items-center gap-3 flex-1 min-w-0 justify-end text-right">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{c.awayTeam}</p>
-                    {aA.standing && (
-                      <p className="font-[family-name:var(--font-data)] text-[9px] text-gray-500">
-                        {aA.position}º no BR · Forca {aA.strengthIndex}
-                      </p>
-                    )}
-                  </div>
-                  {awayLogo ? (
-                    <img src={awayLogo} alt={c.awayTeam} className="w-8 h-8 object-contain" loading="lazy" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-[9px] font-bold">
-                      {c.awayTeam.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Aggregate score if in progress */}
-              {c.status === "em-andamento" && (
-                <div className="mt-3 pt-3 border-t border-gray-100 text-center">
-                  <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">
-                    Agregado: {c.aggHome} - {c.aggAway}
-                  </span>
-                </div>
-              )}
+      {/* Projected teams grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {projectedTeams.map((item, i) => (
+          <div
+            key={i}
+            className={`flex items-center gap-3 rounded-xl border p-4 ${
+              item.badge === "CLASSIFICADO"
+                ? "bg-green-50 border-green-200"
+                : "bg-white border-gray-200 shadow-sm"
+            }`}
+          >
+            <TeamLogo name={item.team} logo={item.logo} size={8} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{item.team}</p>
             </div>
-          )
-        })}
+            <span className={`font-[family-name:var(--font-data)] text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
+              item.badge === "CLASSIFICADO"
+                ? "bg-green-600 text-white"
+                : "bg-[var(--color-yellow-accent)] text-[#0d1117]"
+            }`}>
+              {item.badge === "CLASSIFICADO" ? "CLASSIFICADO" : "FAVORITO"}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* Model note */}
-      <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400 leading-relaxed">
-        Modelo de 4 fatores: Tradição histórica (40%) + Desempenho no Brasileirão (35%) + Mando de campo (15%) + Resultado da ida (10%).
-      </p>
+      {/* Link to full details */}
+      <a
+        href="/copa-brasil"
+        className="inline-flex items-center gap-1 font-[family-name:var(--font-data)] text-xs text-[var(--color-green-primary)] hover:underline"
+      >
+        Ver probabilidades detalhadas →
+      </a>
     </div>
   )
 }
 
 /* ═══════════════════════════════════════════
-   COPA DO MUNDO PROJECTION
+   COPA DO MUNDO PROJECTION — BRACKET
    ═══════════════════════════════════════════ */
 
+interface BracketTeam {
+  name: string
+  logo: string | null
+  teamId: number
+  rank: number
+  probAdvance: number
+  probChampion: number
+  isBrazil: boolean
+}
+
 function CopaMundoProjection({ wcTeamStats, wcGroups }: { wcTeamStats: WcTeamStats[]; wcGroups: WcGroup[] }) {
-  if (wcTeamStats.length === 0) {
+  const bracket = useMemo(() => {
+    if (wcTeamStats.length === 0 || wcGroups.length === 0) return null
+
+    // Project group stage: top 2 from each group by rank
+    const groupNames = [...new Set(wcGroups.map(g => g.group_name))].sort()
+    const groups = groupNames.map(name => {
+      const teams = wcGroups
+        .filter(g => g.group_name === name)
+        .sort((a, b) => a.rank - b.rank)
+        .map((g): BracketTeam => {
+          const stats = wcTeamStats.find(s => s.team_id === g.team_id)
+          return {
+            name: g.team_name,
+            logo: g.team_logo,
+            teamId: g.team_id,
+            rank: g.rank,
+            probAdvance: stats?.probability_advance ?? 0,
+            probChampion: stats?.probability_champion ?? 0,
+            isBrazil: g.team_name.includes("Brazil") || g.team_name.includes("Brasil"),
+          }
+        })
+      return { name, teams }
+    })
+
+    // Collect advancing teams: top 2 per group + 8 best 3rd-place
+    const advancing: BracketTeam[] = []
+    const thirdPlace: BracketTeam[] = []
+    for (const group of groups) {
+      if (group.teams[0]) advancing.push(group.teams[0])
+      if (group.teams[1]) advancing.push(group.teams[1])
+      if (group.teams[2]) thirdPlace.push(group.teams[2])
+    }
+    const best3rd = [...thirdPlace].sort((a, b) => b.probAdvance - a.probAdvance).slice(0, 8)
+    const best3rdIds = new Set(best3rd.map(t => t.teamId))
+
+    // All 32 advancing, seeded by probability_champion
+    const all32 = [...advancing, ...best3rd].sort((a, b) => b.probChampion - a.probChampion)
+
+    // Take top 16 for R16 bracket
+    const seeded = all32.slice(0, 16)
+
+    // Standard bracket seeding: 1v16, 8v9, 5v12, 4v13, 3v14, 6v11, 7v10, 2v15
+    const bracketOrder: [number, number][] = [
+      [0, 15], [7, 8], [4, 11], [3, 12],
+      [2, 13], [5, 10], [6, 9], [1, 14],
+    ]
+
+    const oitavas = bracketOrder.map(([a, b]) => ({
+      team1: seeded[a],
+      team2: seeded[b],
+    }))
+
+    const pickWinner = (t1: BracketTeam, t2: BracketTeam) =>
+      t1.probChampion >= t2.probChampion ? t1 : t2
+
+    const oitavasWinners = oitavas.map(m => pickWinner(m.team1, m.team2))
+
+    // Quartas: adjacent oitavas winners
+    const quartas: { team1: BracketTeam; team2: BracketTeam }[] = []
+    for (let i = 0; i < oitavasWinners.length; i += 2) {
+      quartas.push({ team1: oitavasWinners[i], team2: oitavasWinners[i + 1] })
+    }
+    const quartasWinners = quartas.map(m => pickWinner(m.team1, m.team2))
+
+    // Semi
+    const semi: { team1: BracketTeam; team2: BracketTeam }[] = []
+    for (let i = 0; i < quartasWinners.length; i += 2) {
+      semi.push({ team1: quartasWinners[i], team2: quartasWinners[i + 1] })
+    }
+    const semiWinners = semi.map(m => pickWinner(m.team1, m.team2))
+
+    // Final
+    const final_ = semiWinners.length >= 2
+      ? { team1: semiWinners[0], team2: semiWinners[1] }
+      : null
+
+    const champion = final_ ? pickWinner(final_.team1, final_.team2) : null
+
+    return { groups, best3rdIds, oitavas, quartas, semi, final: final_, champion }
+  }, [wcTeamStats, wcGroups])
+
+  if (!bracket) {
     return (
       <div className="text-center py-20">
         <p className="text-gray-400 text-sm">Dados da Copa do Mundo ainda não disponíveis.</p>
@@ -494,18 +544,7 @@ function CopaMundoProjection({ wcTeamStats, wcGroups }: { wcTeamStats: WcTeamSta
     )
   }
 
-  // Top 10 title contenders
-  const topContenders = [...wcTeamStats]
-    .sort((a, b) => b.probability_champion - a.probability_champion)
-    .slice(0, 10)
-
-  const maxChampProb = topContenders[0]?.probability_champion || 1
-
-  // Brazil
-  const brazil = wcTeamStats.find(t => t.team_name.includes("Brazil"))
-
-  // Groups with advance probabilities
-  const groupNames = [...new Set(wcGroups.map(g => g.group_name))].sort()
+  const brazil = wcTeamStats.find(t => t.team_name.includes("Brazil") || t.team_name.includes("Brasil"))
 
   return (
     <div className="space-y-8">
@@ -529,96 +568,254 @@ function CopaMundoProjection({ wcTeamStats, wcGroups }: { wcTeamStats: WcTeamSta
         </div>
       )}
 
-      {/* Top 10 title contenders */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">
-            TOP 10 FAVORITOS AO TÍTULO
-          </h2>
-          <p className="font-[family-name:var(--font-data)] text-[10px] text-gray-400 mt-1">
-            Probabilidade de conquistar a Copa do Mundo 2026
-          </p>
-        </div>
-        <div className="p-6 space-y-3">
-          {topContenders.map((team, i) => {
-            const isBrazil = team.team_name.includes("Brazil")
-            return (
-              <div key={team.team_id} className={`flex items-center gap-3 ${isBrazil ? "bg-[var(--color-green-light)] rounded-lg px-2 py-1 -mx-2" : ""}`}>
-                <span className="font-[family-name:var(--font-data)] text-xs text-gray-400 w-5 text-right">
-                  {i + 1}
-                </span>
-                {team.team_logo && (
-                  <img src={team.team_logo} alt={team.team_name} className="w-6 h-6 object-contain" />
-                )}
-                <span className={`text-sm w-32 truncate ${isBrazil ? "font-bold text-[var(--color-green-primary)]" : "text-gray-700"}`}>
-                  {team.team_name}
-                </span>
-                <span className="font-[family-name:var(--font-data)] text-[9px] text-gray-400 w-10">
-                  #{team.fifa_ranking}
-                </span>
-                <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${isBrazil ? "bg-[var(--color-green-primary)]" : "bg-[var(--color-yellow-accent)]"}`}
-                    style={{ width: `${(team.probability_champion / maxChampProb) * 100}%` }}
-                  />
-                </div>
-                <span className="font-[family-name:var(--font-heading)] text-base text-gray-900 w-14 text-right">
-                  {team.probability_champion.toFixed(1)}%
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Groups advancement */}
+      {/* FASE DE GRUPOS */}
       <div>
-        <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900 mb-4">
-          PROBABILIDADE DE AVANÇO POR GRUPO
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {groupNames.map(groupName => {
-            const groupTeams = wcGroups
-              .filter(g => g.group_name === groupName)
-              .sort((a, b) => a.rank - b.rank)
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">FASE DE GRUPOS</h2>
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">12 grupos · Top 2 projetados</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {bracket.groups.map(group => (
+            <div key={group.name} className="bg-white border border-gray-200 rounded-xl p-3">
+              <h3 className="font-[family-name:var(--font-heading)] text-sm text-gray-900 mb-2">
+                {group.name.replace("Group ", "GRUPO ")}
+              </h3>
+              <div className="space-y-1">
+                {group.teams.map((team, i) => {
+                  const advances = i < 2 || bracket.best3rdIds.has(team.teamId)
+                  return (
+                    <div key={team.teamId} className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 ${
+                      team.isBrazil ? "bg-green-50 border border-green-200" :
+                      advances ? "bg-gray-50" : "opacity-35"
+                    }`}>
+                      {team.logo && <img src={team.logo} alt={team.name} className="w-4 h-4 object-contain" />}
+                      <span className={`text-[11px] truncate flex-1 ${
+                        team.isBrazil ? "text-green-700 font-bold" :
+                        advances ? "text-gray-700" : "text-gray-400"
+                      }`}>
+                        {team.name}
+                      </span>
+                      {advances && (
+                        <span className={`text-[8px] font-[family-name:var(--font-data)] ${
+                          i < 2 ? "text-green-600" : "text-yellow-600"
+                        }`}>
+                          {team.probAdvance.toFixed(0)}%
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
+      {/* Connector */}
+      <BracketConnector label="32 classificados" />
+
+      {/* OITAVAS DE FINAL */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">OITAVAS DE FINAL</h2>
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">8 confrontos · Favorito em destaque</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          {bracket.oitavas.map((match, i) => (
+            <BracketMatchCard key={i} team1={match.team1} team2={match.team2} />
+          ))}
+        </div>
+      </div>
+
+      <BracketConnector />
+
+      {/* QUARTAS DE FINAL */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">QUARTAS DE FINAL</h2>
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">4 confrontos</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {bracket.quartas.map((match, i) => (
+            <BracketMatchCard key={i} team1={match.team1} team2={match.team2} large />
+          ))}
+        </div>
+      </div>
+
+      <BracketConnector />
+
+      {/* SEMIFINAIS */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">SEMIFINAIS</h2>
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">4 seleções · Probabilidade de título</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {bracket.semi.map((match, i) => {
+            const fav = match.team1.probChampion >= match.team2.probChampion ? match.team1 : match.team2
+            const hasBrazil = match.team1.isBrazil || match.team2.isBrazil
             return (
-              <div key={groupName} className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
-                <h3 className="font-[family-name:var(--font-heading)] text-lg text-gray-900 mb-3">
-                  {groupName.replace("Group ", "GRUPO ")}
-                </h3>
-                <div className="space-y-2">
-                  {groupTeams.map(team => {
-                    const stats = wcTeamStats.find(s => s.team_id === team.team_id)
-                    const advanceProb = stats?.probability_advance || 0
-                    const isBrazil = team.team_name.includes("Brazil")
-
-                    return (
-                      <div key={team.team_id} className="flex items-center gap-2">
-                        {team.team_logo && (
-                          <img src={team.team_logo} alt={team.team_name} className="w-5 h-5 object-contain" />
-                        )}
-                        <span className={`text-xs flex-1 truncate ${isBrazil ? "font-bold text-[var(--color-green-primary)]" : "text-gray-600"}`}>
-                          {team.team_name}
-                        </span>
-                        <div className="w-16 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${advanceProb >= 70 ? "bg-green-500" : advanceProb >= 40 ? "bg-yellow-500" : "bg-red-400"}`}
-                            style={{ width: `${advanceProb}%` }}
-                          />
-                        </div>
-                        <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-700 w-10 text-right">
-                          {advanceProb.toFixed(0)}%
-                        </span>
-                      </div>
-                    )
-                  })}
+              <div key={i} className={`rounded-xl border-2 p-5 ${
+                hasBrazil ? "bg-green-50 border-green-300" : "bg-white border-gray-200 shadow-sm"
+              }`}>
+                <div className={`flex items-center gap-3 ${match.team1 !== fav ? "opacity-60" : ""}`}>
+                  {match.team1.logo && <img src={match.team1.logo} alt={match.team1.name} className="w-8 h-8 object-contain" />}
+                  <span className={`flex-1 ${match.team1.isBrazil ? "text-green-700 font-bold" : "text-gray-900"}`}>
+                    {match.team1.name}
+                  </span>
+                  <span className="font-[family-name:var(--font-heading)] text-lg text-gray-900">
+                    {match.team1.probChampion.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 my-3">
+                  <div className="flex-1 h-px bg-gray-200" />
+                  <span className="text-[9px] text-gray-300">VS</span>
+                  <div className="flex-1 h-px bg-gray-200" />
+                </div>
+                <div className={`flex items-center gap-3 ${match.team2 !== fav ? "opacity-60" : ""}`}>
+                  {match.team2.logo && <img src={match.team2.logo} alt={match.team2.name} className="w-8 h-8 object-contain" />}
+                  <span className={`flex-1 ${match.team2.isBrazil ? "text-green-700 font-bold" : "text-gray-900"}`}>
+                    {match.team2.name}
+                  </span>
+                  <span className="font-[family-name:var(--font-heading)] text-lg text-gray-900">
+                    {match.team2.probChampion.toFixed(1)}%
+                  </span>
                 </div>
               </div>
             )
           })}
         </div>
       </div>
+
+      <BracketConnector />
+
+      {/* FINAL */}
+      {bracket.final && (
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="font-[family-name:var(--font-heading)] text-2xl text-gray-900">FINAL</h2>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+          <div className={`rounded-xl border-2 p-6 max-w-md mx-auto ${
+            bracket.final.team1.isBrazil || bracket.final.team2.isBrazil
+              ? "bg-green-50 border-green-400"
+              : "bg-white border-[var(--color-yellow-accent)]"
+          }`}>
+            <div className="flex items-center justify-center gap-6">
+              <div className="flex flex-col items-center gap-2">
+                {bracket.final.team1.logo && (
+                  <img src={bracket.final.team1.logo} alt={bracket.final.team1.name} className="w-12 h-12 object-contain" />
+                )}
+                <span className={`text-sm font-medium ${bracket.final.team1.isBrazil ? "text-green-700 font-bold" : "text-gray-900"}`}>
+                  {bracket.final.team1.name}
+                </span>
+              </div>
+              <span className="font-[family-name:var(--font-heading)] text-3xl text-gray-300">x</span>
+              <div className="flex flex-col items-center gap-2">
+                {bracket.final.team2.logo && (
+                  <img src={bracket.final.team2.logo} alt={bracket.final.team2.name} className="w-12 h-12 object-contain" />
+                )}
+                <span className={`text-sm font-medium ${bracket.final.team2.isBrazil ? "text-green-700 font-bold" : "text-gray-900"}`}>
+                  {bracket.final.team2.name}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BracketConnector />
+
+      {/* CAMPEAO */}
+      {bracket.champion && (
+        <div className="flex flex-col items-center">
+          <div className={`rounded-2xl border-2 px-10 py-8 text-center shadow-lg ${
+            bracket.champion.isBrazil
+              ? "bg-gradient-to-b from-green-600 to-green-800 border-[var(--color-yellow-accent)]"
+              : "bg-gradient-to-b from-[var(--color-green-dark)] to-[#0a1628] border-[var(--color-yellow-accent)]"
+          }`}>
+            <p className="font-[family-name:var(--font-data)] text-[10px] text-[var(--color-yellow-accent)] uppercase tracking-[0.2em] mb-3">
+              Campeão projetado
+            </p>
+            {bracket.champion.logo && (
+              <img src={bracket.champion.logo} alt={bracket.champion.name} className="w-20 h-20 object-contain mx-auto mb-3" />
+            )}
+            <p className="font-[family-name:var(--font-heading)] text-4xl text-white">
+              {bracket.champion.name.toUpperCase()}
+            </p>
+            <p className="font-[family-name:var(--font-data)] text-sm text-white/60 mt-2">
+              {bracket.champion.probChampion.toFixed(1)}% de probabilidade
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Link */}
+      <div className="text-center pt-2">
+        <a
+          href="/copa-mundo-2026"
+          className="inline-flex items-center gap-1 font-[family-name:var(--font-data)] text-xs text-[var(--color-green-primary)] hover:underline"
+        >
+          Ver grupos e estatísticas completas →
+        </a>
+      </div>
+    </div>
+  )
+}
+
+/* Bracket helper components */
+
+function BracketConnector({ label }: { label?: string }) {
+  return (
+    <div className="flex justify-center">
+      <div className="flex flex-col items-center gap-1">
+        <div className="w-px h-6 bg-gray-300" />
+        {label && <span className="font-[family-name:var(--font-data)] text-[9px] text-gray-400">{label}</span>}
+        {label && <div className="w-px h-6 bg-gray-300" />}
+      </div>
+    </div>
+  )
+}
+
+function BracketMatchCard({ team1, team2, large = false }: { team1: BracketTeam; team2: BracketTeam; large?: boolean }) {
+  const fav = team1.probChampion >= team2.probChampion ? team1 : team2
+  const hasBrazil = team1.isBrazil || team2.isBrazil
+
+  const TeamRow = ({ team, isFav }: { team: BracketTeam; isFav: boolean }) => (
+    <div className={`flex items-center gap-2 ${!isFav ? "opacity-50" : ""}`}>
+      {team.logo ? (
+        <img src={team.logo} alt={team.name} className={`object-contain ${large ? "w-6 h-6" : "w-5 h-5"}`} />
+      ) : (
+        <div className={`rounded-full bg-gray-300 ${large ? "w-6 h-6" : "w-5 h-5"}`} />
+      )}
+      <span className={`truncate flex-1 ${large ? "text-sm" : "text-xs"} ${
+        team.isBrazil ? "text-green-700 font-bold" : isFav ? "text-gray-900 font-medium" : "text-gray-500"
+      }`}>
+        {team.name}
+      </span>
+      {large && (
+        <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400">
+          {team.probChampion.toFixed(1)}%
+        </span>
+      )}
+    </div>
+  )
+
+  return (
+    <div className={`rounded-lg border ${large ? "p-3" : "p-2"} ${
+      hasBrazil ? "bg-green-50 border-green-200" : "bg-white border-gray-200"
+    }`}>
+      <TeamRow team={team1} isFav={team1 === fav} />
+      <div className="flex items-center gap-1.5 my-1">
+        <div className="flex-1 h-px bg-gray-200" />
+        <span className="text-[8px] text-gray-300">VS</span>
+        <div className="flex-1 h-px bg-gray-200" />
+      </div>
+      <TeamRow team={team2} isFav={team2 === fav} />
     </div>
   )
 }

@@ -61,10 +61,16 @@ export default async function HomePage() {
     .sort((a, b) => b.published_at.localeCompare(a.published_at))[0]
 
   let heroHeadline = ""
-  let heroLead = ""
+  let heroPreview = ""
   if (roundEditorial) {
     heroHeadline = extractSection(roundEditorial.body, "MANCHETE")
-    heroLead = extractSection(roundEditorial.body, "LIDE")
+    const lide = extractSection(roundEditorial.body, "LIDE")
+    // First sentence only, max ~20 words
+    const firstSentence = lide.split(/\.\s/)[0]
+    if (firstSentence) {
+      const words = firstSentence.split(/\s+/).slice(0, 20)
+      heroPreview = words.join(" ") + (words.length >= 20 ? "..." : firstSentence.endsWith(".") ? "" : ".")
+    }
   }
 
   // Brasileirão insight: biggest deltaPTS
@@ -117,14 +123,14 @@ export default async function HomePage() {
               FUTEDATA — ANÁLISE DO FUTEBOL BRASILEIRO
             </h1>
           )}
-          {heroLead && (
-            <p className="text-lg md:text-xl text-white/80 mt-6 max-w-3xl leading-relaxed">
-              {heroLead}
+          {heroPreview && (
+            <p className="text-base text-white/60 mt-4 max-w-2xl">
+              {heroPreview}
             </p>
           )}
           <Link
             href="/brasileirao"
-            className="inline-flex items-center gap-2 bg-[var(--color-yellow-accent)] text-[#0d1117] px-6 py-3 rounded-lg font-[family-name:var(--font-heading)] text-lg tracking-wide mt-8 hover:bg-[var(--color-yellow-dark)] transition-colors"
+            className="inline-flex items-center gap-2 bg-[var(--color-yellow-accent)] text-[#0d1117] px-6 py-3 rounded-lg font-[family-name:var(--font-heading)] text-lg tracking-wide mt-6 hover:bg-[var(--color-yellow-dark)] transition-colors"
           >
             LER ANÁLISE COMPLETA →
           </Link>
