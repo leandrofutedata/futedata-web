@@ -17,15 +17,17 @@ import { RoundAnalyses } from "./RoundAnalyses"
 import { AnalysisModal } from "./AnalysisModal"
 import { SeasonProjection } from "./SeasonProjection"
 import { DataExplainer } from "./DataExplainer"
+import { RoundSummary } from "./RoundSummary"
 
 interface HomeClientProps {
   games: Game[]
   articles: Article[]
   playerStats: PlayerStats[]
   standingsInsight?: string
+  roundAnalysis?: string
 }
 
-export function HomeClient({ games, articles, playerStats, standingsInsight }: HomeClientProps) {
+export function HomeClient({ games, articles, playerStats, standingsInsight, roundAnalysis }: HomeClientProps) {
   const availableRounds = useMemo(() => getAvailableRounds(games), [games])
   const latestFinishedRound = useMemo(
     () => getLatestFinishedRound(games),
@@ -111,6 +113,13 @@ export function HomeClient({ games, articles, playerStats, standingsInsight }: H
             currentRound={currentRound}
             availableRounds={availableRounds}
             onRoundChange={setCurrentRound}
+          />
+
+          <RoundSummary
+            roundNumber={currentRound}
+            games={games}
+            initialAnalysis={roundAnalysis}
+            initialRound={latestFinishedRound}
           />
 
           <div>

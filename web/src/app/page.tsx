@@ -1,6 +1,6 @@
 import { fetchAllGames, fetchArticles, fetchPlayerStats } from "@/lib/data"
 import { HomeClient } from "@/components/HomeClient"
-import { calcStandings } from "@/lib/calculations"
+import { calcStandings, parseRoundNumber } from "@/lib/calculations"
 import { generateInsight } from "@/lib/ai"
 import { getLatestFinishedRound } from "@/lib/data"
 
@@ -36,12 +36,43 @@ Regras:
     }
   )
 
+  // Generate round analysis server-side
+  const roundGames = games.filter(g =>
+    g.status === 'FT' && parseRoundNumber(g.round) === currentRound
+  )
+  let roundAnalysis = ''
+  if (roundGames.length > 0) {
+    const roundData = roundGames.map(g => {
+      const hg = g.home_goals ?? 0
+      const ag = g.away_goals ?? 0
+      const hxg = g.home_xg?.toFixed(1) ?? '?'
+      const axg = g.away_xg?.toFixed(1) ?? '?'
+      return `${g.home_team} ${hg}x${ag} ${g.away_team} (xG: ${hxg} vs ${axg})`
+    }).join('\n')
+
+    roundAnalysis = await generateInsight(
+      `round-summary-${currentRound}`,
+      `Resultados da Rodada ${currentRound} do Brasileirão 2026:\n${roundData}\n\nEscreva uma análise editorial da rodada no formato EXATO abaixo:\nTITULO: [título forte e opinativo em 1 frase, não neutro]\nDESTAQUE 1: [resultado + dado xG + interpretação em 2 frases]\nDESTAQUE 2: [resultado + dado xG + interpretação em 2 frases]\nDESTAQUE 3: [resultado + dado xG + interpretação em 2 frases]\nJOGADA DOS DADOS: [algo que os números revelam que passou despercebido, 2 frases]`,
+      {
+        maxTokens: 500,
+        systemPrompt: `Você é o editor-chefe de uma revista de dados do futebol brasileiro.
+Regras:
+- SIGA O FORMATO EXATAMENTE como pedido (TITULO:, DESTAQUE 1:, etc.)
+- Tom de colunista inteligente e provocativo
+- SEMPRE cite dados concretos (placar, xG, diferença)
+- Português brasileiro natural
+- Sem aspas, sem emojis`
+      }
+    )
+  }
+
   return (
     <HomeClient
       games={games}
       articles={articles}
       playerStats={playerStats}
       standingsInsight={standingsInsight}
+      roundAnalysis={roundAnalysis}
     />
   )
 }
