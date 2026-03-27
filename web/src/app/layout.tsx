@@ -86,13 +86,47 @@ export default function RootLayout({
         <Navbar />
         <main>{children}</main>
         <footer className="bg-[var(--color-green-dark)] mt-16">
-          <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-yellow-accent)] tracking-wide">
-              FUTEDATA
-            </span>
-            <p className="font-[family-name:var(--font-data)] text-xs text-white/70 text-center sm:text-right">
-              © 2026 — Dados calculados em tempo real a partir de fontes oficiais
-            </p>
+          <div className="max-w-7xl mx-auto px-4 py-10">
+            {/* Top row: logo + nav */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
+              <span className="font-[family-name:var(--font-heading)] text-2xl text-[var(--color-yellow-accent)] tracking-wide">
+                FUTEDATA
+              </span>
+              <nav className="flex flex-wrap gap-x-6 gap-y-2">
+                {[
+                  { href: "/", label: "Brasileirão" },
+                  { href: "/times", label: "Times" },
+                  { href: "/rankings", label: "Rankings" },
+                  { href: "/cartola", label: "Cartola FC" },
+                  { href: "/copa-brasil", label: "Copa do Brasil" },
+                  { href: "/sobre", label: "Sobre" },
+                ].map((link) => (
+                  <a key={link.href} href={link.href} className="font-[family-name:var(--font-data)] text-xs text-white/70 hover:text-white transition-colors">
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-white/10 pt-6 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+                <p className="font-[family-name:var(--font-data)] text-[11px] text-white/50">
+                  Dados fornecidos por API-Football (api-sports.io)
+                </p>
+                <p className="font-[family-name:var(--font-data)] text-[11px] text-white/50">
+                  Modelos estatísticos próprios: xG, xGA, xPTS calculados pelo Futedata
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <p className="font-[family-name:var(--font-data)] text-[11px] text-white/40">
+                  © 2026 Futedata. Todos os direitos reservados.
+                </p>
+                <a href="/sobre" className="font-[family-name:var(--font-data)] text-[11px] text-[var(--color-yellow-accent)]/70 hover:text-[var(--color-yellow-accent)] transition-colors">
+                  Sobre o projeto →
+                </a>
+              </div>
+            </div>
           </div>
         </footer>
       </body>
