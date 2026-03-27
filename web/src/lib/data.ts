@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { Game, Article, PlayerStats, CopaBrasilGame, CartolaPlayer, WcGroup, WcGame, WcTeamStats, SquadPlayer, MarketValue } from './types'
+import type { Game, Article, PlayerStats, CopaBrasilGame, CartolaPlayer, WcGroup, WcGame, WcTeamStats, SquadPlayer, MarketValue, Projection } from './types'
 import { parseRoundNumber } from './calculations'
 
 const PAGE_SIZE = 1000
@@ -249,4 +249,22 @@ export function getRoundStatus(games: Game[]): 'encerrada' | 'ao-vivo' | 'futura
   if (allFinished) return 'encerrada'
   if (allFuture) return 'futura'
   return 'encerrada'
+}
+
+export async function fetchProjections(competition?: string): Promise<Projection[]> {
+  let query = supabase
+    .from('projections')
+    .select('*')
+    .order('computed_at', { ascending: false })
+
+  if (competition) {
+    query = query.eq('competition', competition)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error('Error fetching projections:', error.message)
+    return []
+  }
+  return data as Projection[]
 }

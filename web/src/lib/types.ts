@@ -175,3 +175,15 @@ export interface WcTeamStats {
   probability_advance: number
   probability_champion: number
 }
+
+export interface Projection {
+  id: number
+  competition: string
+  entity: string
+  round_phase: string
+  projected_points: number | null
+  zone: string | null
+  probability: number | null
+  metadata: Record<string, unknown>
+  computed_at: string
+}
