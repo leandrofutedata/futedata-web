@@ -15,7 +15,6 @@ import { GameCard } from "./GameCard"
 import { Sidebar } from "./Sidebar"
 import { RoundAnalyses } from "./RoundAnalyses"
 import { AnalysisModal } from "./AnalysisModal"
-import { SeasonProjection } from "./SeasonProjection"
 import { DataExplainer } from "./DataExplainer"
 import { RoundSummary } from "./RoundSummary"
 
@@ -107,7 +106,14 @@ export function HomeClient({ games, articles, playerStats, standingsInsight, rou
 
           <DataExplainer standings={standings} />
 
-          <SeasonProjection standings={standings} />
+          <a
+            href="/projecoes"
+            className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 hover:bg-gray-100 transition-colors group"
+          >
+            <span className="font-[family-name:var(--font-data)] text-xs text-gray-500">
+              Ver projeção de final de temporada →
+            </span>
+          </a>
 
           <RoundNav
             currentRound={currentRound}
