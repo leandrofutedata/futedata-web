@@ -49,6 +49,25 @@ Identifique o confronto mais desequilibrado e dê sua opinião sobre quem avanç
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <Breadcrumb items={[{ label: "Copa do Brasil" }]} />
       </div>
+
+      {copaInsight && (
+        <div className="max-w-7xl mx-auto px-4 mt-2 mb-6">
+          <div className="bg-[var(--color-green-dark)] rounded-xl p-6 md:p-8 shadow-lg">
+            <span className="font-[family-name:var(--font-data)] text-[10px] font-bold tracking-[0.2em] text-[var(--color-yellow-accent)] uppercase block mb-3">
+              Copa do Brasil 2026 · {activePhase.toUpperCase()}
+            </span>
+            <p className="font-[family-name:var(--font-heading)] text-2xl sm:text-3xl text-white leading-tight">
+              {copaInsight.split(".")[0]}.
+            </p>
+            {copaInsight.split(".").length > 2 && (
+              <p className="text-[var(--color-green-light)] text-sm mt-3 leading-relaxed max-w-3xl">
+                {copaInsight.split(".").slice(1).join(".").trim()}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <CopaBrasilClient copaGames={copaGames} brasileiraoGames={brasileiraoGames} copaInsight={copaInsight} />
       <div className="max-w-7xl mx-auto px-4">
         <SeeAlso items={[
