@@ -100,7 +100,7 @@ export function HomeClient({ games, articles, playerStats, standingsInsight }: H
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column — table + round games + analyses */}
         <div className="lg:col-span-2 space-y-6">
-          <StandingsTable standings={standings} standingsInsight={standingsInsight} />
+          <StandingsTable standings={standings} standingsInsight={standingsInsight} games={games} />
 
           <SeasonProjection standings={standings} />
 

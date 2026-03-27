@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import type { TeamStanding } from "@/lib/types"
+import type { Game, TeamStanding } from "@/lib/types"
 import { getTeamLabel, getZoneColor } from "@/lib/calculations"
 import { getTeamSlug } from "@/lib/teams"
 import { TeamSpotlight } from "./TeamSpotlight"
@@ -45,9 +45,10 @@ function MetricTooltip({ label }: { label: string }) {
 interface StandingsTableProps {
   standings: TeamStanding[]
   standingsInsight?: string
+  games?: Game[]
 }
 
-export function StandingsTable({ standings, standingsInsight }: StandingsTableProps) {
+export function StandingsTable({ standings, standingsInsight, games }: StandingsTableProps) {
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null)
 
   return (
@@ -224,7 +225,7 @@ export function StandingsTable({ standings, standingsInsight }: StandingsTablePr
                 {isExpanded && (
                   <tr>
                     <td colSpan={15} className="p-0">
-                      <TeamSpotlight team={team} position={position} />
+                      <TeamSpotlight team={team} position={position} games={games} standings={standings} />
                     </td>
                   </tr>
                 )}
