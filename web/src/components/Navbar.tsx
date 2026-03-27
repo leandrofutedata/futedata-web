@@ -87,14 +87,21 @@ export function Navbar() {
           <nav className="hidden lg:flex items-center gap-0.5">
             {links.map((link) => {
               const isActive = pathname === link.href || pathname.startsWith(link.href + "/")
+              const isCopa2026 = link.href === "/copa-mundo-2026"
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-2.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors whitespace-nowrap ${
+                  className={`px-2.5 py-1.5 rounded-lg text-[13px] transition-colors whitespace-nowrap ${
+                    isCopa2026
+                      ? "font-bold"
+                      : "font-medium"
+                  } ${
                     isActive
                       ? "bg-white/20 text-white"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                      : isCopa2026
+                        ? "text-[#FFD700] hover:bg-white/10 hover:text-[#FFE44D]"
+                        : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   {link.label}
@@ -181,15 +188,22 @@ export function Navbar() {
           <nav className="lg:hidden pb-4 border-t border-white/20 pt-2">
             {links.map((link) => {
               const isActive = pathname === link.href || pathname.startsWith(link.href + "/")
+              const isCopa2026 = link.href === "/copa-mundo-2026"
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`block px-3 py-3 rounded-lg text-sm font-medium ${
+                  className={`block px-3 py-3 rounded-lg text-sm ${
+                    isCopa2026
+                      ? "font-bold"
+                      : "font-medium"
+                  } ${
                     isActive
                       ? "bg-white/20 text-white"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                      : isCopa2026
+                        ? "text-[#FFD700] hover:bg-white/10 hover:text-[#FFE44D]"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   {link.label}
