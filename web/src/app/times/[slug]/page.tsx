@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb"
 import { SeeAlso } from "@/components/SeeAlso"
 import { SquadSection, type SquadPlayerData } from "@/components/SquadSection"
 import { EvolutionChart } from "@/components/EvolutionChart"
+import { GoalsXgChart, type GoalsXgEntry } from "@/components/GoalsXgChart"
 import { HeadToHead } from "@/components/HeadToHead"
 import { notFound } from "next/navigation"
 import Link from "next/link"
@@ -74,15 +75,17 @@ export default async function TeamPage({ params }: PageProps) {
   const upcomingGames = teamGames.filter(g => g.status === 'NS').slice(0, 3)
   const lastGames = finishedGames.slice(-5).reverse()
 
-  // Evolution: PTS vs xPTS per round
+  // Evolution: PTS vs xPTS per round + goals/xG data
   const evolution: { round: number; pts: number; xpts: number; gf: number; xg: number }[] = []
+  const goalsXgData: GoalsXgEntry[] = []
   let cumPTS = 0, cumGF = 0, cumGC = 0, played = 0
   for (const game of finishedGames) {
     const round = parseRoundNumber(game.round)
     const isHome = game.home_team === teamInfo.apiName
     const gf = isHome ? (game.home_goals ?? 0) : (game.away_goals ?? 0)
     const gc = isHome ? (game.away_goals ?? 0) : (game.home_goals ?? 0)
-    const gameXG = isHome ? (game.home_xg ?? gf) : (game.away_xg ?? gf)
+    const rawXg = isHome ? game.home_xg : game.away_xg
+    const gameXG = rawXg ?? gf
 
     played++
     cumGF += gf
@@ -94,6 +97,17 @@ export default async function TeamPage({ params }: PageProps) {
     const xPTS = calcXPTS(xG, xGA, played)
 
     evolution.push({ round, pts: cumPTS, xpts: Math.round(xPTS * 10) / 10, gf, xg: Math.round(gameXG * 10) / 10 })
+
+    const oppApi = isHome ? game.away_team : game.home_team
+    const oppInfo = getTeamByName(oppApi)
+    goalsXgData.push({
+      round,
+      gf,
+      xg: rawXg !== null ? Math.round(rawXg * 10) / 10 : null,
+      opponent: oppInfo?.name || oppApi,
+      score: isHome ? `${game.home_goals ?? 0}×${game.away_goals ?? 0}` : `${game.away_goals ?? 0}×${game.home_goals ?? 0}`,
+      isHome,
+    })
   }
 
   // Squad grouped by position
@@ -255,7 +269,7 @@ Regras:
 
   const h2hOpponents = TEAMS
     .filter(t => t.slug !== slug)
-    .map(t => ({ apiName: t.apiName, name: t.name, slug: t.slug }))
+    .map(t => ({ apiName: t.apiName, apiId: t.apiId, name: t.name, slug: t.slug, logo: t.logo }))
     .sort((a, b) => a.name.localeCompare(b.name))
 
   // SeeAlso neighbors
@@ -352,30 +366,9 @@ Regras:
                 <EvolutionChart data={evolution.map(e => ({ round: e.round, pts: e.pts, xpts: e.xpts }))} />
               )}
 
-              {/* Goals vs xG per round */}
-              {evolution.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-                  <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900 mb-4">GOLS vs xG POR RODADA</h2>
-                  <div className="flex items-end gap-1 h-32">
-                    {evolution.slice(-12).map((e) => {
-                      const max = Math.max(...evolution.slice(-12).map(x => Math.max(x.gf, x.xg, 1)))
-                      return (
-                        <div key={e.round} className="flex-1 flex flex-col items-center gap-0.5">
-                          <span className="font-[family-name:var(--font-data)] text-[8px] text-gray-400">{e.gf}</span>
-                          <div className="w-full flex gap-0.5" style={{ height: `${(Math.max(e.gf, e.xg) / max) * 100}%`, minHeight: '8px' }}>
-                            <div className="flex-1 bg-[var(--color-green-primary)] rounded-t" style={{ height: `${(e.gf / Math.max(e.gf, e.xg, 0.1)) * 100}%` }} />
-                            <div className="flex-1 bg-[var(--color-green-primary)]/30 rounded-t" style={{ height: `${(e.xg / Math.max(e.gf, e.xg, 0.1)) * 100}%` }} />
-                          </div>
-                          <span className="font-[family-name:var(--font-data)] text-[8px] text-gray-400">R{e.round}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <div className="flex gap-4 mt-3 justify-center">
-                    <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[var(--color-green-primary)]" /><span className="font-[family-name:var(--font-data)] text-[10px] text-gray-500">Gols reais</span></div>
-                    <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[var(--color-green-primary)]/30" /><span className="font-[family-name:var(--font-data)] text-[10px] text-gray-500">xG</span></div>
-                  </div>
-                </div>
+              {/* Goals vs xG per round (Chart.js) */}
+              {goalsXgData.length > 0 && (
+                <GoalsXgChart data={goalsXgData} />
               )}
 
               {/* Squad */}
@@ -389,10 +382,9 @@ Regras:
 
               {/* Head-to-Head */}
               <HeadToHead
-                teamApiName={teamInfo.apiName}
-                teamName={teamInfo.name}
-                games={h2hGames}
+                team={{ name: teamInfo.name, apiName: teamInfo.apiName, apiId: teamInfo.apiId, logo: teamInfo.logo }}
                 opponents={h2hOpponents}
+                currentSeasonGames={h2hGames}
               />
 
               {/* Last games */}
