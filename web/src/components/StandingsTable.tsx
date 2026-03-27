@@ -7,6 +7,41 @@ import { getTeamLabel, getZoneColor } from "@/lib/calculations"
 import { getTeamSlug } from "@/lib/teams"
 import { TeamSpotlight } from "./TeamSpotlight"
 
+const METRIC_TOOLTIPS: Record<string, string> = {
+  xG: "Gols esperados — quantos gols o time deveria ter marcado baseado na qualidade das chances criadas",
+  xGA: "Gols esperados sofridos — quantos gols o time deveria ter sofrido baseado nas chances que permitiu",
+  xPTS: "Pontos esperados — quantos pontos o time mereceria com base no seu desempenho real em campo",
+  "±PTS": "Diferença entre pontos reais e esperados. Positivo = time com sorte ou eficiente. Negativo = time que merecia mais",
+}
+
+function MetricTooltip({ label }: { label: string }) {
+  const [open, setOpen] = useState(false)
+  const tooltip = METRIC_TOOLTIPS[label]
+  if (!tooltip) return <>{label}</>
+
+  return (
+    <span className="relative inline-flex items-center gap-0.5">
+      {label}
+      <button
+        type="button"
+        className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-300 text-[8px] font-bold text-gray-600 hover:bg-[var(--color-green-primary)] hover:text-white transition-colors leading-none"
+        onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        aria-label={`Explicação de ${label}`}
+      >
+        ?
+      </button>
+      {open && (
+        <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 px-3 py-2 bg-gray-900 text-white text-[11px] leading-snug rounded-lg shadow-lg pointer-events-none">
+          {tooltip}
+          <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+        </span>
+      )}
+    </span>
+  )
+}
+
 interface StandingsTableProps {
   standings: TeamStanding[]
   standingsInsight?: string
@@ -67,16 +102,16 @@ export function StandingsTable({ standings, standingsInsight }: StandingsTablePr
                 SG
               </th>
               <th className="text-center px-2 py-3 font-[family-name:var(--font-data)] text-xs text-gray-500 font-medium bg-[var(--color-green-light)]">
-                xG
+                <MetricTooltip label="xG" />
               </th>
               <th className="text-center px-2 py-3 font-[family-name:var(--font-data)] text-xs text-gray-500 font-medium bg-[var(--color-green-light)]">
-                xGA
+                <MetricTooltip label="xGA" />
               </th>
               <th className="text-center px-2 py-3 font-[family-name:var(--font-data)] text-xs text-gray-500 font-medium bg-[var(--color-green-light)]">
-                xPTS
+                <MetricTooltip label="xPTS" />
               </th>
               <th className="text-center px-2 py-3 font-[family-name:var(--font-data)] text-xs text-gray-500 font-medium bg-[var(--color-green-light)]">
-                ±PTS
+                <MetricTooltip label="±PTS" />
               </th>
               <th className="text-center px-2 py-3 font-[family-name:var(--font-data)] text-xs text-gray-500 font-medium">
                 Forma
