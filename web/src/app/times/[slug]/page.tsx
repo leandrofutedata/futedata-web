@@ -5,6 +5,7 @@ import { generateInsight } from "@/lib/ai"
 import { Breadcrumb } from "@/components/Breadcrumb"
 import { SeeAlso } from "@/components/SeeAlso"
 import { SquadSection, type SquadPlayerData } from "@/components/SquadSection"
+import { EvolutionChart } from "@/components/EvolutionChart"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -239,8 +240,6 @@ Regras:
     return { game: g, opponent: oppInfo?.name || opp, isHome: g.home_team === teamInfo.apiName, position: oppIdx >= 0 ? oppIdx + 1 : null }
   })
 
-  const maxPTS = evolution.length > 0 ? Math.max(...evolution.map(e => Math.max(e.pts, e.xpts))) : 1
-
   // SeeAlso neighbors
   const seeAlsoTeams = standings.filter(s => s.team !== teamInfo.apiName).slice(0, 3)
 
@@ -330,30 +329,9 @@ Regras:
                 </div>
               </div>
 
-              {/* Evolution chart: PTS vs xPTS */}
-              {evolution.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-                  <h2 className="font-[family-name:var(--font-heading)] text-xl text-gray-900 mb-4">EVOLUÇÃO PTS vs xPTS</h2>
-                  <div className="space-y-1.5">
-                    {evolution.map((e) => (
-                      <div key={e.round} className="flex items-center gap-2">
-                        <span className="font-[family-name:var(--font-data)] text-[10px] text-gray-400 w-7 text-right">R{e.round}</span>
-                        <div className="flex-1 relative h-5">
-                          <div className="absolute top-0 left-0 h-full bg-[var(--color-green-primary)]/20 rounded" style={{ width: `${(e.xpts / maxPTS) * 100}%` }} />
-                          <div className={`absolute top-0 left-0 h-full rounded ${e.pts >= e.xpts ? 'bg-[var(--color-green-primary)]/60' : 'bg-orange-400/60'}`} style={{ width: `${(e.pts / maxPTS) * 100}%` }} />
-                          <div className="absolute top-0 left-0 h-full flex items-center px-1.5">
-                            <span className="font-[family-name:var(--font-data)] text-[9px] font-bold text-gray-800">{e.pts}</span>
-                          </div>
-                        </div>
-                        <span className="font-[family-name:var(--font-data)] text-[9px] text-gray-400 w-8">x{e.xpts.toFixed(0)}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-4 mt-3">
-                    <div className="flex items-center gap-1"><span className="w-3 h-2 rounded bg-[var(--color-green-primary)]/60" /><span className="font-[family-name:var(--font-data)] text-[9px] text-gray-400">PTS reais</span></div>
-                    <div className="flex items-center gap-1"><span className="w-3 h-2 rounded bg-[var(--color-green-primary)]/20" /><span className="font-[family-name:var(--font-data)] text-[9px] text-gray-400">xPTS</span></div>
-                  </div>
-                </div>
+              {/* Evolution chart: PTS vs xPTS (SVG line chart) */}
+              {evolution.length >= 2 && (
+                <EvolutionChart data={evolution.map(e => ({ round: e.round, pts: e.pts, xpts: e.xpts }))} />
               )}
 
               {/* Goals vs xG per round */}
