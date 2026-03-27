@@ -372,7 +372,7 @@ Regras:
     name: teamInfo.fullName,
     alternateName: teamInfo.name,
     sport: "Football",
-    url: `https://futedata.com.br/times/${slug}`,
+    url: `https://www.futedata.com.br/times/${slug}`,
     logo: teamInfo.logo,
     image: teamInfo.logo,
     memberOf: { "@type": "SportsOrganization", name: "Brasileirão Série A 2026" },

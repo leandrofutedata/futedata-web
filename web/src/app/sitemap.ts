@@ -7,7 +7,7 @@ function playerSlug(name: string, id: number): string {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://futedata.com.br'
+  const baseUrl = 'https://www.futedata.com.br'
 
   const staticPages: MetadataRoute.Sitemap = [
     {

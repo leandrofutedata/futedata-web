@@ -24,7 +24,7 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://futedata.com.br"),
+  metadataBase: new URL("https://www.futedata.com.br"),
   title: "Futedata — Análise Estatística do Futebol Brasileiro",
   description:
     "O melhor site de estatísticas avançadas do Brasileirão. xG, xGA, xPTS e dados que nenhum outro site brasileiro oferece.",
@@ -68,7 +68,7 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Futedata",
-    url: "https://futedata.com.br",
+    url: "https://www.futedata.com.br",
     description: "Análise estatística avançada do futebol brasileiro",
     inLanguage: "pt-BR",
   }
@@ -77,8 +77,8 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Futedata",
-    url: "https://futedata.com.br",
-    logo: "https://futedata.com.br/api/og?title=FUTEDATA&subtitle=An%C3%A1lise+Estat%C3%ADstica",
+    url: "https://www.futedata.com.br",
+    logo: "https://www.futedata.com.br/api/og?title=FUTEDATA&subtitle=An%C3%A1lise+Estat%C3%ADstica",
     description: "Plataforma de análise estatística avançada do futebol brasileiro. xG, xGA, xPTS e dados exclusivos do Brasileirão.",
     foundingDate: "2026",
     sameAs: [],

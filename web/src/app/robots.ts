@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: '/api/',
     },
-    sitemap: 'https://futedata.com.br/sitemap.xml',
+    sitemap: 'https://www.futedata.com.br/sitemap.xml',
   }
 }

@@ -10,7 +10,7 @@ interface BreadcrumbProps {
 }
 
 export function Breadcrumb({ items }: BreadcrumbProps) {
-  const baseUrl = "https://futedata.com.br"
+  const baseUrl = "https://www.futedata.com.br"
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
