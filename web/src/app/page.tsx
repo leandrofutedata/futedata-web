@@ -36,32 +36,41 @@ Regras:
     }
   )
 
-  // Generate round analysis server-side
+  // Generate round editorial server-side
   const roundGames = games.filter(g =>
     g.status === 'FT' && parseRoundNumber(g.round) === currentRound
   )
   let roundAnalysis = ''
   if (roundGames.length > 0) {
-    const roundData = roundGames.map(g => {
+    const gamesContext = roundGames.map(g => {
       const hg = g.home_goals ?? 0
       const ag = g.away_goals ?? 0
       const hxg = g.home_xg?.toFixed(1) ?? '?'
       const axg = g.away_xg?.toFixed(1) ?? '?'
-      return `${g.home_team} ${hg}x${ag} ${g.away_team} (xG: ${hxg} vs ${axg})`
+      const hPos = standings.findIndex(s => s.team === g.home_team) + 1
+      const aPos = standings.findIndex(s => s.team === g.away_team) + 1
+      return `${g.home_team} (${hPos}º) ${hg}×${ag} ${g.away_team} (${aPos}º) — xG: ${hxg} vs ${axg}`
     }).join('\n')
 
+    const standingsContext = standings.slice(0, 10).map((t, i) =>
+      `${i + 1}. ${t.team} ${t.points}pts (${t.wins}V ${t.draws}E ${t.losses}D) xG:${t.xG.toFixed(1)} xGA:${t.xGA.toFixed(1)} xPTS:${t.xPTS.toFixed(1)} ±PTS:${t.deltaPTS > 0 ? '+' : ''}${t.deltaPTS.toFixed(1)}`
+    ).join('\n')
+
     roundAnalysis = await generateInsight(
-      `round-summary-${currentRound}`,
-      `Resultados da Rodada ${currentRound} do Brasileirão 2026:\n${roundData}\n\nEscreva uma análise editorial da rodada no formato EXATO abaixo:\nTITULO: [título forte e opinativo em 1 frase, não neutro]\nDESTAQUE 1: [resultado + dado xG + interpretação em 2 frases]\nDESTAQUE 2: [resultado + dado xG + interpretação em 2 frases]\nDESTAQUE 3: [resultado + dado xG + interpretação em 2 frases]\nJOGADA DOS DADOS: [algo que os números revelam que passou despercebido, 2 frases]`,
+      `round-editorial-${currentRound}`,
+      `DADOS DA RODADA ${currentRound} DO BRASILEIRÃO 2026:\n\nJOGOS:\n${gamesContext}\n\nCLASSIFICAÇÃO (top 10 após rodada ${currentRound}):\n${standingsContext}\n\nEscreva um texto editorial completo seguindo EXATAMENTE este formato:\n\nMANCHETE: [frase curta, provocativa, máximo 10 palavras, em CAPS]\n\nLIDE: [parágrafo de 2-3 frases capturando a essência da rodada]\n\nANÁLISE PRINCIPAL:\n[Parágrafo 1: o jogo mais importante e seu significado na tabela]\n\n[Parágrafo 2: a surpresa da rodada — resultado inesperado]\n\n[Parágrafo 3: o time que mais impressionou pelos dados (xG, xPTS)]\n\n[Parágrafo 4: o time que decepcionou]\n\nCONCLUSÃO: [1 parágrafo sobre o que essa rodada significa para o restante da temporada]`,
       {
-        maxTokens: 500,
-        systemPrompt: `Você é o editor-chefe de uma revista de dados do futebol brasileiro.
+        maxTokens: 1200,
+        systemPrompt: `Você é um colunista esportivo brasileiro especialista em estatísticas avançadas. Escreva como um colunista do The Athletic — opinativo, apaixonado, inteligente.
+
 Regras:
-- SIGA O FORMATO EXATAMENTE como pedido (TITULO:, DESTAQUE 1:, etc.)
-- Tom de colunista inteligente e provocativo
-- SEMPRE cite dados concretos (placar, xG, diferença)
-- Português brasileiro natural
-- Sem aspas, sem emojis`
+- Use EXATAMENTE o formato com os marcadores: MANCHETE:, LIDE:, ANÁLISE PRINCIPAL:, CONCLUSÃO:
+- NÃO liste resultados um por um — ANALISE, INTERPRETE, OPINE
+- Cite dados reais: xG, xPTS, ±PTS, posição na tabela
+- Português brasileiro natural e fluente
+- Sem emojis, sem aspas, sem bullet points no corpo do texto
+- Cada parágrafo da análise deve ter 3-5 frases
+- A manchete deve ser curta (máximo 10 palavras) e provocativa, em MAIÚSCULAS`
       }
     )
   }
