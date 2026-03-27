@@ -17,7 +17,7 @@ export interface Game {
 export interface Article {
   id: number
   game_id: number
-  type: 'pre-jogo' | 'tempo-real' | 'pos-jogo'
+  type: string
   title: string
   body: string
   published_at: string
